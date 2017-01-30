@@ -1,5 +1,10 @@
 ---
-title: Hello World!
+title: "Hello World!"
+excerpt_separator: "<!--more-->"
+categories:
+  - Random
+tags:
+  - Hello World
 ---
 
 # Who am I
