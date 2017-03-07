@@ -42,11 +42,10 @@ As the midterm is coming, I am revising for what we have covered so far in the c
 - Ethics
 - Data Collection (More data? What is the cost?)
 
-## The Machine Learning Workflow
-![alt text][ML Workflow]
-[ML Workflow]: https://www.mapr.com/ebooks/spark/images/mllib_rec_engine_image006.png "The Machine Learning Workflow"
+## The Machine Learning Workflow [^2]
+![ML Workflow](https://www.mapr.com/ebooks/spark/images/mllib_rec_engine_image006.png)
 
-Source: https://www.mapr.com/ebooks/spark/08-recommendation-engine-spark.html
+[^2]: Source: https://www.mapr.com/ebooks/spark/08-recommendation-engine-spark.html
 
 # Git
 
@@ -99,26 +98,23 @@ git log # show git log
 
 - Difference (Relationship) between git and github: people new to git may be confused by those two. In one sentence: Git is a version control tool, and GitHub is an online project hosting platform using git.(Therefore, you may use git with or without Github.)
 
-- Git add and staging area[^2]:
+- Git add and staging area[^3]:
 
-![alt text][Staging Area]
-[Staging Area]: https://git-scm.com/book/en/v2/images/areas.png "git add and staging area"
+![Staging Area] (https://git-scm.com/book/en/v2/images/areas.png)
 
-[^2]: Source: https://git-scm.com/book/en/v2/Getting-Started-Git-Basics
+[^3]: Source: https://git-scm.com/book/en/v2/Getting-Started-Git-Basics
 
-- Fast-forward [^3] (Note that no new command is created):
+- Fast-forward [^4] (Note that no new command is created):
 
-![alt text][What is fast-forward]
-  [What is fast-forward]: https://ariya.io/images/2013/09/merging.png "Fast Forward"
+![What is fast-forward](https://ariya.io/images/2013/09/merging.png)
 
-[^3]: Source: https://ariya.io/2013/09/fast-forward-git-merge
+[^4]: Source: https://ariya.io/2013/09/fast-forward-git-merge
 
-- What is HEAD^ and HEAD~ [^4]:
+- What is HEAD^ and HEAD~ [^5]:
 
-![alt text][HEAD^ and HEAD~ in git]
-  [HEAD^ and HEAD~ in git]: ../assets/pics/git_1.png "HEAD^ and HEAD~ in git"
+![HEAD^ and HEAD~ in git]({{ site.url }}/assets/pics/git_1.png)
 
-[^4]: Source: http://schacon.github.io/git/git-rev-parse#_specifying_revisions
+[^5]: Source: http://schacon.github.io/git/git-rev-parse#_specifying_revisions
 
 # References and Copyright Notice
 
