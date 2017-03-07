@@ -85,8 +85,12 @@ git commit -m <msg> # use the given <msg> as the commit message.
 git stash # saves your local modifications away and reverts the working directory to match the HEAD commit. Can be used before a git pull
 ```
 
-- Other important ones (used in Homework 1):
+- Other important ones (in lecture notes or used in Homework 1):
 ```bash
+git reset --soft <commit> # moves HEAD to <commit>, takes the current branch with it
+git reset --mixed <commit> # moves HEAD to <commit>, changes index to be at <commit>, but not working directory
+git reset --hard <commit> # moved HEAD to <commit>, changes index and working tree to <commit>
+git rebase -i <commit> # interactive rebase
 git rebase --onto feature master~3 master # rebase everything from master~2 (master - 3 commits, excluding this one) up until the tip of master (included) to the tip of feature.
 git reflog show # show reference logs that records when the tips of branches and other references were updated in the local repository.
 git checkout HEAD@{3} # checkout to the commit where HEAD used to be three moves ago
@@ -100,7 +104,7 @@ git log # show git log
 
 - Git add and staging area[^3]:
 
-![Staging Area] (https://git-scm.com/book/en/v2/images/areas.png)
+![Staging Area](https://git-scm.com/book/en/v2/images/areas.png)
 
 [^3]: Source: https://git-scm.com/book/en/v2/Getting-Started-Git-Basics
 
@@ -115,6 +119,87 @@ git log # show git log
 ![HEAD^ and HEAD~ in git]({{ site.url }}/assets/pics/git_1.png)
 
 [^5]: Source: http://schacon.github.io/git/git-rev-parse#_specifying_revisions
+
+- Github Pull Request:
+  - Pull requests allow you to contribute to a repository which you don't have permission to write to. The general workflow is: fork -> clone to local -> add a feature branch -> make changes -> push.
+
+  - To keep update with the upstream, you may also need to: add upstream as another remote -> pull from upstream -> work upon it -> push to your origin remote.
+
+# Coding Guidelines:
+
+## Good resources (and books that I really like):
+- [Pep 8](https://www.python.org/dev/peps/pep-0008/)
+- [*Refactoring: Improving the Design of Existing Code* by Kent Beck and Martin Fowler](https://www.amazon.com/Refactoring-Improving-Design-Existing-Code/dp/0201485672)
+- [*Clean Code: A Handbook of Agile Software Craftsmanship* by Robert Cecil Martin](https://www.amazon.com/Refactoring-Improving-Design-Existing-Code/dp/0201485672)
+
+# Python:
+
+## Intro:
+- Powerful
+- Simple Syntax
+- Interpreted language: slow (many libraries written in C/Fortran/Cython)
+- Python 2 v.s. Python 3 (main changes in: division, print, iterator, string; need something from python 3 in python 2? do `from __future__ import bla`)
+
+## Good practices:
+- Always use explicit imports and standard naming
+conventions.
+
+# Testing and Documentation:
+
+## Different kinds of tests
+- Unit Tests: a function is doing the right thing; Can be done with pytest
+- Integration tests: functions together are doing the right thing; Can be done with TravisCI (continuous integration)
+- Non-regression tests: bugs truly get removed
+
+## Different ways of doing documentation:
+- PEP 257 for docstrings and inline comments
+- NumpyDoc format
+- Various tools for generating documentation pages: SPhinx, ReadTheDocs
+
+# Visualization -- Exploration and Communications
+
+## Visual Channels: Try not to...
+- Use 3D-volume to show information
+- Use textures to show information
+- Use hues for quantitative changes
+- Use bad colormaps such as jet and rainbow. They vary non-linearly and non-monotonically in lightness, which can create edges in images where there are none. The varying lightness also makes grayscale print completely useless.
+
+## Color maps:
+
+| Sequential Colormaps        | Diverging Colormaps           | Quantitative Colormaps           | Miscellaneous Colormaps |
+|:-------------:|:-------------:|:-------------:|:-------------:|
+| Go from one hue/saturation to another (Lightness also changes)    | Grey/white (focus point) in the middle, different hues going in either direction | Use to show discrete values | **Don't use jet and rainbow!** (Andy will be disappointed if you do so @.@)|
+|  Use to emphasize extremes | Use to show deviation from the neutral points      | Designed to have optimum contrast for a particular number of discrete values |  Use perceptual uniform colormaps|
+
+## Matplotlib Introduction
+- `% matplotlib inline` v.s. `% matplotlib notebook`
+-  Figure and Axes:
+  - Create automatically by doing plot command
+  - Create by `plt.figure()`
+  - Create by `plt.subplots(n,m)`
+  - Create by `plt.subplot(n, m, i)`, where i is 1-indexed, column-based position
+- Two interfaces:
+  - Stateful interface: applies to current figure and axes (e.g.: `plt.xlim`)
+  - Object-oriented interface: explicitly use object (e.g.: `ax.set_xlim`)
+
+
+## Important commands:
+- Plot command `ax.plot(np.linspace(-4, 4, 100), sin, '--o', c = 'r', lw = 3)`
+  - Use figsize to specify how large each plot is (otherwise it will be "squeezed")
+  - Single variable x: plot it against its index; Two variables x and y: plot against each other
+  - By default, it's line-plot. Use “o” to create a scatterplot
+  - Can change the width, color, dashing and markers of the plot
+- Scatter command: `ax.scatter(x, y, c=x-y, s=np.abs(np.random.normal(scale=20, size=50)), cmap='bwr', edgecolor='k0')`
+- Histogram: `ax.hist(np.random.normal(size=100), bins="auto")`
+- Bar chart (vertical): `plt.bar(range(len(value)), value); plt.xticks(range(len(value)), labels, rotation=90)`
+- Bar chart (horizontal): `plt.barh(range(len(value)), value); plt.yticks(range(len(value)), labels, fontsize=10)`
+- Heatmap: `ax[0, 1].imshow(arr, interpolation='bilinear')`
+  - imshow essentially renders numpy arrays as images
+- Hexgrids: `plt.hexbin(x, y, bins='log', extent=(-1, 1, -1, 1))`
+  - hexbin is essentially a 2-D histogram with hexagonal cells. (which is used to show 2D density map)
+  - It can be much more informative than a scatter plot
+- TwinX: `ax2 = ax1.twinx()`
+  - Show series in different scale much better
 
 # References and Copyright Notice
 
