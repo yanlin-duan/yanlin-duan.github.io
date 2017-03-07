@@ -44,12 +44,81 @@ As the midterm is coming, I am revising for what we have covered so far in the c
 
 ## The Machine Learning Workflow
 ![alt text][ML Workflow]
-
 [ML Workflow]: https://www.mapr.com/ebooks/spark/images/mllib_rec_engine_image006.png "The Machine Learning Workflow"
 
 Source: https://www.mapr.com/ebooks/spark/08-recommendation-engine-spark.html
 
+# Git
 
+For git, I have found the following 2 YouTube videos very helpful:
+
+[![Git For Ages 4 And Up](http://img.youtube.com/vi/1ffBJ4sVUb4/0.jpg)](http://www.youtube.com/watch?v=1ffBJ4sVUb4)
+
+[![Learn Git in 20 Minutes](http://img.youtube.com/vi/Y9XZQO1n_7c/0.jpg)](http://www.youtube.com/watch?v=Y9XZQO1n_7c)
+
+Below I summarized some key points about git:
+
+- Create/Remove repository:
+```bash
+git init # use git to track current directory
+rm .git # undo the above (your files are still there)
+```
+
+- Typical workflow:
+```bash
+git clone [url] # clone a remote repository
+git branch newBranch # create a new branch
+git checkout newBranch # say "Now I want to work on that branch"
+# do your job...
+git add this_file # add it to staging area
+git commit # Take a snapshot of the state of the folder, with a commit message. It will be identified with an ID (hash value)
+git push origin master # push from local -> remote
+git pull origin master # pull from remote -> local
+git merge A # merge branch A to current branch
+```
+
+- My favorite shortcuts/commands:
+```bash
+git checkout -b newBranch # create branch and checkout in one line
+git add -A # update the indices for all files in the entire working tree
+git commit -a # stage files that have been modified and deleted, but not new files you have not done git add with
+git commit -m <msg> # use the given <msg> as the commit message.
+git stash # saves your local modifications away and reverts the working directory to match the HEAD commit. Can be used before a git pull
+```
+
+- Other important ones (used in Homework 1):
+```bash
+git rebase --onto feature master~3 master # rebase everything from master~2 (master - 3 commits, excluding this one) up until the tip of master (included) to the tip of feature.
+git reflog show # show reference logs that records when the tips of branches and other references were updated in the local repository.
+git checkout HEAD@{3} # checkout to the commit where HEAD used to be three moves ago
+git checkout feature this_file # merge the specific file (this_file) from feature to your current branch
+git log # show git log
+```
+
+- The hardest part of git in my opinion is the **"polymorphism"** of git commands. As shown above, you can do git checkout on a branch, a commit, a commit + a file, and they all mean different things. (This motivates me to write a git tutorial in the future when I have time, where I will go through the common git commands in a different way as existing tutorials.)
+
+- Difference (Relationship) between git and github: people new to git may be confused by those two. In one sentence: Git is a version control tool, and GitHub is an online project hosting platform using git.(Therefore, you may use git with or without Github.)
+
+- Git add and staging area[^2]:
+
+![alt text][Staging Area]
+[Staging Area]: https://git-scm.com/book/en/v2/images/areas.png "git add and staging area"
+
+[^2]: Source: https://git-scm.com/book/en/v2/Getting-Started-Git-Basics
+
+- Fast-forward [^3] (Note that no new command is created):
+
+![alt text][What is fast-forward]
+  [What is fast-forward]: https://ariya.io/images/2013/09/merging.png "Fast Forward"
+
+[^3]: Source: https://ariya.io/2013/09/fast-forward-git-merge
+
+- What is HEAD^ and HEAD~ [^4]:
+
+![alt text][HEAD^ and HEAD~ in git]
+  [HEAD^ and HEAD~ in git]: ../assets/pics/git_1.png "HEAD^ and HEAD~ in git"
+
+[^4]: Source: http://schacon.github.io/git/git-rev-parse#_specifying_revisions
 
 # References and Copyright Notice
 
