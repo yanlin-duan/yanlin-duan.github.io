@@ -17,15 +17,16 @@ This semester I am taking Applied Machine Learning with [Andreas Mueller](http:/
 
 As the midterm is coming, I am revising for what we have covered so far, and think that preparing a review note would be an effective way to do so (though the exam is closed book). I am posting my notes here so it can benefit more people.
 
-# References and Copyright Notice
+# Acknowledgment
 
-The notes are largely inspired by:
+The texts of this note are largely inspired by:
 
-- [Course material](https://amueller.github.io/applied_ml_spring_2017/) for COMS 4995 Applied Machine Learning
-- *Introduction to machine learning with python* by Mueller and Guido
-- *Applied predictive modeling* by Kuhn, Johnson
+- [Course material](https://amueller.github.io/applied_ml_spring_2017/) for COMS 4995 Applied Machine Learning.
 
-Several code snippets below are modified based on the course note.
+The example codes in this note are modified based on:
+
+- [Course material](https://amueller.github.io/applied_ml_spring_2017/) for COMS 4995 Applied Machine Learning.
+- Supplemental material of *An Introduction to Machine Learning with Python* by Andreas C. Müller and Sarah Guido (O’Reilly). Copyright 2017 Sarah Guido and Andreas Müller, 978-1-449-36941-5.
 
 Care has been taken to avoid copyrighted contents as much as possible, and give citation wherever is proper.
 
@@ -101,6 +102,10 @@ For git, I have found the following 2 YouTube videos very helpful:
 
 [![Learn Git in 20 Minutes](http://img.youtube.com/vi/Y9XZQO1n_7c/0.jpg)](http://www.youtube.com/watch?v=Y9XZQO1n_7c)
 
+The following slide by Andreas Mueller is also a very good one (which explains `git reset`, `git revert`, etc. which I did not cover in this note:
+
+[Advanced Git](http://amueller.github.io/advanced_git_nyu_2016/#/)
+
 Below I summarized some key points about git:
 
 - Create/Remove repository:
@@ -130,6 +135,7 @@ git commit -a # stage files that have been modified and deleted, but not new fil
 git commit -m <msg> # use the given <msg> as the commit message.
 git stash # saves your local modifications away and reverts the working directory to match the HEAD commit. Can be used before a git pull
 ```
+ Note that `git add -A` and `git commit -a` may accidentally commit things you do not intend to, so use them with caution!
 
 - Other important ones (in lecture notes or used in Homework 1):
 ```bash
@@ -731,11 +737,11 @@ Optimization theory tells us that the SVM problem can also be viewed as :
 
 $$ \hat{y} = sign (\sum_{i}^n {\alpha_i(x_i^Tx_i)}) $$
 
-Now, if we have a function $$\phi$$ that maps our feature space from some low dimension $d$ to high dimension $D$. In SVM dual problem, we then need to calculate the dot product:
+Now, if we have a function $$\phi$$ that maps our feature space from some low dimension $$d$$ to high dimension $$D$$. In SVM dual problem, we then need to calculate the dot product:
 
 $$ \hat{y} = sign (\sum_{i}^n {\alpha_i(\phi(x_i)^T \phi(x_i))}) $$
 
-We don't want to explicitly have $\phi(x)$ calculated in a high dimension $D$. After all, all we care is the result of the dot product. We want to do some calculations in low dimension $d$, and somehow, a magic function $$k(x_i, x_j)$$ would give us the dot product.
+We don't want to explicitly have $$\phi(x)$$ calculated in a high dimension $$D$$. After all, all we care is the result of the dot product. We want to do some calculations in low dimension $$d$$, and somehow, a magic function $$k(x_i, x_j)$$ would give us the dot product.
 
 Thankfully, [Mercer's theorem](https://en.wikipedia.org/wiki/Mercer's_theorem) tells us that as long as k is a symmetric, and positive definite, there exists a corresponding $$\phi$$!
 
@@ -754,6 +760,7 @@ Thankfully, [Mercer's theorem](https://en.wikipedia.org/wiki/Mercer's_theorem) t
 ```python
 from sklearn.svm import SVC
 poly_svm = SVC(kernel="poly", degree=3, coef0=1).fit(X, y)
+rbf_svm = SVC(kernel='rbf', C=100, gamma=0.1).fit(X, y)
 ```
 
 ## Why kernel is good
@@ -805,13 +812,13 @@ Use graphviz library
 
 ## Avoid Overfitting
 
-To avoid overfitting, we usually tune (through GridSearchCV!) the following parameters:
+To avoid overfitting, we usually tune (through GridSearchCV!) **one of** the following parameters (they all in some sense reduce the size of the tree):
 - max_depth (how deep is the tree)
 - max_leaf_nodes (how many ending states)
 - min_sample_split (at least split that amount of sample)
 - max_sample_split
 
-Note that if we prune, the leaf will not be so pure, so we will come to a state where we are X% certain it should be class A.
+Note that if we prune, the leaf will not be so pure, so we will come to a state where we are "X% certain that some data should be class A".
 
 ## Code
 ```python
