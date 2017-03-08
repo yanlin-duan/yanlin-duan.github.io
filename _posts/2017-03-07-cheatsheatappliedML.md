@@ -334,7 +334,7 @@ nc = NearestCentroid(shrink_threshold=threshold)
 ## Linear Regression (without regularization)
 
 ### Model
-$$ \min_{w \in \mathbb{R}^d} \sum_{i=1}^d{||w^Tx_i - y_i||^2} $$
+$$ \min_{w \in \mathbb{R}^d} \sum_{i=1}^N{||w^Tx_i - y_i||^2} $$
 
 ### Code
 ```python
@@ -345,7 +345,7 @@ lr = LinearRegression().fit(X_train, y_train)
 ## Ridge (l2-norm regularization)
 
 ### Model
-$$ \min_{w \in \mathbb{R}^d} \sum_{i=1}^d{||w^Tx_i - y_i||^2 + \alpha ||w||_2^2} $$
+$$ \min_{w \in \mathbb{R}^d} \sum_{i=1}^N{||w^Tx_i - y_i||^2 + \alpha ||w||_2^2} $$
 
 ### Code
 ```python
@@ -357,7 +357,7 @@ print(ridge.coef_) #can get coefficients this way
 ## Lasso (l1-norm regularization)
 
 ### Model
-$$ \min_{w \in \mathbb{R}^d} \sum_{i=1}^d{||w^Tx_i - y_i||^2 + \alpha ||w||_1} $$
+$$ \min_{w \in \mathbb{R}^d} \sum_{i=1}^N{||w^Tx_i - y_i||^2 + \alpha ||w||_1} $$
 
 ### Code
 ```python
@@ -371,7 +371,7 @@ Lasso can (sort of) do feature selection because many coefficients will be set t
 ## Elastic Net (l1 + l2-norm regularization)
 
 ### Model
-$$ \min_{w \in \mathbb{R}^d} \sum_{i=1}^d{||w^Tx_i - y_i||^2 + \alpha_1 ||w||_1 + \alpha_2 ||w||_2^2} $$
+$$ \min_{w \in \mathbb{R}^d} \sum_{i=1}^N{||w^Tx_i - y_i||^2 + \alpha_1 ||w||_1 + \alpha_2 ||w||_2^2} $$
 
 ### Code
 
@@ -381,6 +381,49 @@ from sklearn.linear_model import ElasticNet
 enet = ElasticNet(alpha=alpha, l1_ratio=0.6)
 y_pred_test = enet.fit(X_train, y_train).predict(X_test)
 ```
+
+## Random Sample Consensus (RANSAC)
+
+### Idea
+- Iteratively train a model and at the same time, detect outliers.
+- It is non-deterministic in the sense that it produces a reasonable result only with a certain probability. The more iterations allowed, the high the probability.
+
+### Code
+
+```python
+from sklearn.linear_model import RANSACRegressor
+model_ransac = RANSACRegressor()
+
+model_ransac.fit(X, y)
+inlier_mask = model_ransac.inlier_mask_
+outlier_mask = np.logical_not(inlier_mask)
+```
+
+## Robust Regression (Huber Regressor)
+
+### Idea
+Minimizes what is called "Huber Loss", which makes sure that the loss function is not heavily affected by the outliers. At the same time, it will not completely ignore their influence.
+
+### Code
+```python
+from sklearn.linear_model import HuberRegressor
+huber = HuberRegressor(epsilon=1, max_iter=100, alpha=1).fit(X, y)
+```
+
+# Model: Linear Classification
+
+## (Penalized) Logistic Regression
+
+### Model
+$$ \min_{w \in \mathbb{R}^d} - C\sum_{i=1}^N{\log(\exp(-y_iw^Tx_i) + 1)} + ||w||_1 $$
+$$ \min_{w \in \mathbb{R}^d} - C\sum_{i=1}^N{\log(\exp(-y_iw^Tx_i) + 1)} + ||w||_2^2 $$
+
+### Note
+- The higher C, the less regularization. (inverse to $$\alpha$$)
+- l2-norm version is smooth (differentiable)
+
+
+
 
 
 # References and Copyright Notice
