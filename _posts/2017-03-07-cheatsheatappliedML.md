@@ -303,8 +303,7 @@ print(grid.best_score_, grid.best_params_) #grid also has grid.cv_results_ which
 - We still need to split our data into training and test set.
 - If we do GridSearchCV on a pipeline, the param_grid's key should look like: `'svc__C:'`.
 
-
-# Supervised Learning (Neighbors)
+# Model: Neighbors
 
 ## KNN
 ```
@@ -313,13 +312,41 @@ knn = KNeighborsClassifier(n_neighbors=5)
 knn.fit(X_train, y_train)
 ```
 
-## NearestCentroid (find the mean of each class, and predict the one that is closet; resulting in a linear boundary)
+## Nearest Centroid (find the mean of each class, and predict the one that is closet; resulting in a linear boundary)
 ```
 from sklearn.neighbors import NearestCentroid
 nc = NearestCentroid()
 nc.fit(X, y)
 ```
 
+## Nearest Shrunken Centroid
+```
+nc = NearestCentroid(shrink_threshold=threshold)
+```
+
+### Difference between Nearest Shrunken Centroid and Nearest Centroid [^6]
+>  It "shrinks" each of the class centroids toward the overall centroid for all classes by an amount we call the threshold . This shrinkage consists of moving the centroid towards zero by threshold, setting it equal to zero if it hits zero. For example if threshold was 2.0, a centroid of 3.2 would be shrunk to 1.2, a centroid of -3.4 would be shrunk to -1.4, and a centroid of 1.2 would be shrunk to zero.
+
+[^6]: Source: http://statweb.stanford.edu/~tibs/PAM/Rdist/howwork.html
+
+# Model: Linear Regression
+
+## Linear Regression (without regularization)
+
+### Model
+$$ \min_{w \in \mathbb{R}^d} \sum_{i=1}^d{||w^Tx_i - y_i||^2} $$
+
+### Code
+```
+from sklearn.linear_model import LinearRegression
+lr = LinearRegression().fit(X_train, y_train)
+```
+
+## Ridge
+```
+from sklearn.linear_model import LinearRegression
+lr = LinearRegression().fit(X_train, y_train)
+```
 
 
 # References and Copyright Notice
