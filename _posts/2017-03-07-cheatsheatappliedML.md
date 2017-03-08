@@ -1,5 +1,5 @@
 ---
-title: "My Cheatsheet for Applied Machine Learning Class"
+title: "My Review Note for Applied Machine Learning (First Half)"
 excerpt: "Summarizes what we have learnt so far."
 excerpt_separator: "<!--more-->"
 categories:
@@ -15,7 +15,7 @@ mathjax: true
 
 This semester I am taking Applied Machine Learning with [Andreas Mueller](http://amueller.github.io/). It's a great class focusing on the practical side of machine learning.
 
-As the midterm is coming, I am revising for what we have covered so far, and think that preparing a cheatsheet would be an effective way to do so (though the exam is closed book). I am posting my notes here so it can benefit more people.
+As the midterm is coming, I am revising for what we have covered so far, and think that preparing a review note would be an effective way to do so (though the exam is closed book). I am posting my notes here so it can benefit more people.
 
 # References and Copyright Notice
 
