@@ -217,7 +217,7 @@ conventions. (Don't `from bla import *`!)
 
 ## Color maps:
 
-| Sequential Colormaps        | Diverging Colormaps           | Quantitative Colormaps           | Miscellaneous Colormaps |
+| Sequential Colormaps        | Diverging Colormaps           | Qualitative Colormaps           | Miscellaneous Colormaps |
 |:-------------:|:-------------:|:-------------:|:-------------:|
 | Go from one hue/saturation to another (Lightness also changes)    | Grey/white (focus point) in the middle, different hues going in either direction | Use to show discrete values | **Don't use jet and rainbow!** (Andy will be disappointed if you do so @.@)|
 |  Use to emphasize extremes | Use to show deviation from the neutral points      | Designed to have optimum contrast for a particular number of discrete values |  Use perceptual uniform colormaps|
