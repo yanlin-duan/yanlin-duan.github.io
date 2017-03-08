@@ -741,7 +741,7 @@ Thankfully, [Mercer's theorem](https://en.wikipedia.org/wiki/Mercer's_theorem) t
 
 ## Examples of Kernels
 - $$k_\text{poly}(x, x') = (x^Tx' + c))^d$$
-- $$K_\text{rbf}(x, x') = \exp(\gamma || x-x'||^2)$$ (rbf kernel stands for [Radial basis function kernel](https://en.wikipedia.org/wiki/Radial_basis_function_kernel)) (Gamma is the "bandwidth" of the function)
+- $$K_\text{rbf}(x, x') = \exp( \gamma || x-x'||^2)$$
 
 ## Note
 - The summation, multiplication of kernels are still kernel.
