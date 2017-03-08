@@ -10,6 +10,7 @@ tags:
   - Learning Diary
 mathjax: true
 ---
+{% include toc.html %}
 
 # Why this post
 
