@@ -15,7 +15,7 @@ mathjax: true
 
 This semester I am taking Applied Machine Learning with [Andreas Mueller](http://amueller.github.io/). It's a great class focusing on the practical side of machine learning.
 
-As the midterm is coming, I am revising for what we have covered so far in the class, and think that preparing a cheatsheet would be an effective way to do so (though the exam is closed book). I am posting my notes here so it can benefit more people.
+As the midterm is coming, I am revising for what we have covered so far, and think that preparing a cheatsheet would be an effective way to do so (though the exam is closed book). I am posting my notes here so it can benefit more people.
 
 # References and Copyright Notice
 
@@ -716,3 +716,140 @@ It is Lasso model fit with Least Angle Regression a.k.a. Lars. More details [her
 Use when n_features >> n_samples
 
 # Model: Support Vector Machine (Kernelized SVM)
+
+Sometimes we want models stronger than a linear decision boundary. At the same time, we want the optimization problem to be "easily" solvable, i.e. making sure it is convex.
+
+One way to achieve this is by adding polynomial features. This raises the dataset to higher dimension, resulting a non-linear decision boundary in the original space. The drawback of this is the computational cost and storage cost. After adding interactive features, the feature space becomes much higher, and we need more time to train the model, predict the model and more space for storage.
+
+Kernel SVM, in some sense, solves this problem. On one hand, we can enjoy the benefit of high dimensionality; On the other hand, we do not need to do computation in that high dimensional space. This magic is done by the kernel function.
+
+## Duality and Kernel Function
+
+Optimization theory tells us that the SVM problem can also be viewed as :
+
+$$ \hat{y} = sign (\sum_{i}^n {\alpha_i(x_i^T_x)}) $$
+
+Now, if we have a function $$\phi$$ that maps our feature space from some low dimension $d$ to high dimension $D$. In SVM dual problem, we then need to calculate the dot product:
+
+$$ \hat{y} = sign (\sum_{i}^n {\alpha_i(\phi(x_i)^T \phi(x_i))}) $$
+
+We don't want to explicitly have $\phi(x)$ calculated in a high dimension $D$. After all, all we care is the result of the dot product. We want to do some calculations in low dimension $d$, and somehow, a magic function $$k(x_i, x_j)$$ would give us the dot product.
+
+Thankfully, [Mercer's theorem](https://en.wikipedia.org/wiki/Mercer's_theorem) tells us that as long as k is a symmetric, and positive definite, there exists a corresponding $$\phi$$!
+
+## Examples of Kernels
+- $$k_\text{poly}(x, x') = (x^Tx' + c))^d$$
+- $$K_\text{rbf}(x, x') = \exp(\gamma||x-x'||^2)$$ (rbf kernel stands for [Radial basis function kernel](https://en.wikipedia.org/wiki/Radial_basis_function_kernel)) (Gamma is the "bandwidth" of the function)
+
+## Note
+- The summation, multiplication of kernels are still kernel.
+- A kernel times a scaler is still a kernel.
+- RBF kernel maps to infinite-dimensional: powerful but can easily overfit. Tune C and gamma for best performance
+- Consider to apply StandardScaler or MinMaxScaler for pre-processing.
+
+## Code
+```python
+from sklearn.svm import SVC
+poly_svm = SVC(kernel="poly", degree=3, coef0=1).fit(X, y)
+```
+
+## Why kernel is good
+Let's compare the computational cost for polynomial kernel/features
+- Explicitly calculate $$\phi$$: n_features^d * n_samples
+- Kernel: n_samples * n_samples
+
+## Why kernel is bad
+- Does not scale very well when data set is large.
+- Solution: Do Kernel Approximation using RBFSampler, Random Kitchen Sinks, etc.
+
+
+## Support Vector Regression
+
+Finally we may use SVM to do regression. Polynomial/ RBF kernels in this case will give a robust non-linear regressor.
+
+## Code
+```python
+from sklearn.svm import SVR
+svr_poly = SVR(kernel='poly', C=100, degree=3, epsilon=.1, coef0=1)
+y_rbf = svr_rbf.fit(X, y).predict(X)
+```
+
+# Model: Tree, Trees and Forest
+
+Trees are popular non-linear machine learning models, largely because of its power, flexibility and interpretability.
+
+## Decision Tree
+
+Decision trees are commonly used for classification. The idea is to partition the data to different classes by asking a series of (true/false) questions. Compared to models like KNN, trees are much faster in terms of prediction.
+
+Another good thing about decision trees is that it can work on categorical data directly (no encoding needed).
+
+## Criteria:
+
+### For classification:
+- Gini index
+- Cross-entropy
+
+### For regression:
+- Mean Absolute Error
+- Mean Squared Error
+
+### For Bagging Models:
+- Out-Of-Bag error (the mean prediction error on each training sample $$x_i$$, using only the trees that did not have $$x_i$$ in their bootstrap sample)
+
+## Visualization
+Use graphviz library
+
+## Avoid Overfitting
+
+To avoid overfitting, we usually tune (through GridSearchCV!) the following parameters:
+- max_depth (how deep is the tree)
+- max_leaf_nodes (how many ending states)
+- min_sample_split (at least split that amount of sample)
+- max_sample_split
+
+Note that if we prune, the leaf will not be so pure, so we will come to a state where we are X% certain it should be class A.
+
+## Code
+```python
+from sklearn.tree import DecisionTreeClassifier
+tree = DecisionTreeClassifier(max_depth=5)
+tree.fit(X_train, y_train)
+```
+
+## Ensemble methods
+
+Ensemble method essentially means the wisdom of the crowd: meaning we train a bunch of weak classifiers and let them correct each other.
+
+Common applications include Voting Classifier, Bagging and Random Forest
+
+### Voting Classifier -- Majority rule Classifier
+
+- Soft voting classifier: each classifier calculates class probability
+- Hard voting classifier: each classifier directly outputs class label
+
+```python
+from sklearn.ensemble import VotingClassifier
+# let a LinearSVC and a decision tree vote
+voting = VotingClassifier([('svc', LinearSVC(C=100)),
+                           ('tree', DecisionTreeClassifier(max_depth=3, random_state=0))],
+                         voting='hard')
+voting.fit(X_train, y_train)
+```
+### Bagging (Bootstrap Aggregation)
+
+Draw bootstrap samples (usually with replacement). So each time the data sets are a bit different, so the model will also be slightly different.
+
+### Random Forest -- Bagging of Decision Trees
+
+- For each tree, we randomly pick bootstrap samples
+- For each split, we randomly pick features
+- Choose max_features to be $$\sqrt{\text{n_features}}$$ for classification and around n_features for regression
+- May use warm start to accelerate/ get better performance
+
+```python
+from sklearn.ensemble import RandomForestClassifier
+rf = RandomForestClassifier(n_estimators=50).fit(X_train, y_train)
+```
+
+###
