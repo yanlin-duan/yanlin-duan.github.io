@@ -26,6 +26,12 @@ As the midterm is coming, I am revising for what we have covered so far in the c
 - Reinforcement Learning (explore & learn from the environment)
 - Others (semi-supervised, active learning, forecasting, etc.)
 
+## Parametric and Non-parametric models
+- Parametric model: Number of “parameters” (degrees of freedom) independent of data.
+  - e.g.: Linear Regression, Logistic Regression, Nearest Shrunken Centroid
+- Non-parametric model: Degrees of freedom increase with more data. Each training instance can be viewed as a "parameter" in the model, as you use them in the prediction.
+  - e.g.: Random Forest, Nearest Neighbors
+
 ## Difference between Machine Learning and Statistics
 
 | ML        | Statistics           |
@@ -134,7 +140,7 @@ git log # show git log
 
 # Python:
 
-## Intro:
+## Python Quick Intro:
 - Powerful
 - Simple Syntax
 - Interpreted language: slow (many libraries written in C/Fortran/Cython)
@@ -171,8 +177,8 @@ conventions.
 | Go from one hue/saturation to another (Lightness also changes)    | Grey/white (focus point) in the middle, different hues going in either direction | Use to show discrete values | **Don't use jet and rainbow!** (Andy will be disappointed if you do so @.@)|
 |  Use to emphasize extremes | Use to show deviation from the neutral points      | Designed to have optimum contrast for a particular number of discrete values |  Use perceptual uniform colormaps|
 
-## Matplotlib Introduction
-- `% matplotlib inline` v.s. `% matplotlib notebook`
+## Matplotlib Quick Intro:
+- `% matplotlib inline` v.s. `% matplotlib notebook` in Jupyter Notebook
 -  Figure and Axes:
   - Create automatically by doing plot command
   - Create by `plt.figure()`
@@ -189,9 +195,13 @@ conventions.
   - Single variable x: plot it against its index; Two variables x and y: plot against each other
   - By default, it's line-plot. Use “o” to create a scatterplot
   - Can change the width, color, dashing and markers of the plot
-- Scatter command: `ax.scatter(x, y, c=x-y, s=np.abs(np.random.normal(scale=20, size=50)), cmap='bwr', edgecolor='k0')`
+- Scatter command: `ax.scatter(x, y, c=x-y, s=np.abs(np.random.normal(scale=20, size=50)), cmap='bwr', edgecolor='k')`
+  - cmap is the colormap, bwr means blue-white-red
+  - k is black
 - Histogram: `ax.hist(np.random.normal(size=100), bins="auto")`
+  - Use bins="auto" to heuristically choose number of bins
 - Bar chart (vertical): `plt.bar(range(len(value)), value); plt.xticks(range(len(value)), labels, rotation=90)`
+  - For bar chart, the length must be provided. This can be done using range and len.
 - Bar chart (horizontal): `plt.barh(range(len(value)), value); plt.yticks(range(len(value)), labels, fontsize=10)`
 - Heatmap: `ax[0, 1].imshow(arr, interpolation='bilinear')`
   - imshow essentially renders numpy arrays as images
@@ -200,6 +210,117 @@ conventions.
   - It can be much more informative than a scatter plot
 - TwinX: `ax2 = ax1.twinx()`
   - Show series in different scale much better
+
+# Fight Against Overfitting
+
+## Naive Way: No train/test Split
+
+### Drawback
+You never know how your model performs on new data, and you will cry.
+
+
+## First Attempt: Train Test Split (by default 75%-25%)
+
+### Code
+```
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y)
+```
+
+### Drawback
+If we use the test error rate to tune hyper-parameters, it will learn about noise in the test set, and this knowledge will not generalize to new data.
+
+Key idea: **You should only touch your test data once**.
+
+## Second Attempt: Three-fold split (add validation set)
+
+### Code
+```
+from sklearn.model_selection import train_test_split
+X_trainval, X_test, y_trainval, y_test = train_test_split(X, y)
+X_train, X_val, y_train, y_val = train_test_split(X_trainval, y_trainval)
+```
+
+### Pros
+Fast and simple
+
+### Cons
+We lose a lot of data for evaluation, and the results depend on the particular sampling. (overfit on validation set)
+
+## Third Attempt: K-fold Cross Validation + Train/Test split
+
+### Idea
+Split data into multiple folds and built multiple models. Each time test models on different (unused) fold.
+
+### Code
+```
+from sklearn.model_selection import cross_val_score
+scores = cross_val_score(knn, X_trainval, y_trainval, cv=10) # equiv to StratifiedKFold without shuffle
+```
+### Pros
+- Each data point is in the test-set exactly once.
+- Better data use (larger training sets)
+
+### Cons
+- It takes 5 or 10 times longer (you train 5/10 models)
+
+## More CV strategies
+
+### Code
+```
+from sklearn.model_selection import KFold, ShuffleSplit, StratifiedKFold
+kfold = KFold(n_splits=10)
+ss = ShuffleSplit(n_splits=30, train_size=.7, test_size=.3)
+skfold = StratifiedKFold(n_splits=10)
+```
+
+### Explanation
+- **Stratified K-Fold**: preserves the class frequencies in each fold to be the same as of the overall dataset
+  - Especially helpful when data is imbalanced
+- **Leave One Out**: Equivalent to `KFold(n_folds=n_samples)`, where we use n-1 samples to train and 1 to test.
+  - Cons: high variance, and it takes a long time!
+  - Solution: Repeated (Stratified) K-Fold + Shuffling: Reduces variance, so better!
+- **ShuffleSplit**: Repeatedly and randomly pick training/test sets based on training/test set size for number of iterations times.
+  - Pros: Especially good for subsample when data set is large
+- **GroupKFold**: Patient example; where samples in the same group are highly correlated. New data essentially means new group. So we want to split data based on group.
+- **TimeSeriesSplit**: Stock price example; Taking increasing chunks of data from the past and making predictions on the next chunk. Making sure you do not have access to the "future".
+
+## Final Attempt: Use GridSearch CV that wraps up everything
+
+### Code
+```
+from sklearn.model_selection import GridSearchCV
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y)
+
+param_grid = {'n_neighbors':  np.arange(1, 20, 3)}
+grid = GridSearchCV(KNeighborsClassifier(), param_grid=param_grid, cv=10)
+grid.fit(X_train, y_train)
+print(grid.best_score_, grid.best_params_) #grid also has grid.cv_results_ which has many useful statistics
+```
+
+### Note
+- We still need to split our data into training and test set.
+- If we do GridSearchCV on a pipeline, the param_grid's key should look like: `'svc__C:'`.
+
+
+# Supervised Learning (Neighbors)
+
+## KNN
+```
+from sklearn.neighbors import KNeighborsClassifier
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
+```
+
+## NearestCentroid (find the mean of each class, and predict the one that is closet; resulting in a linear boundary)
+```
+from sklearn.neighbors import NearestCentroid
+nc = NearestCentroid()
+nc.fit(X, y)
+```
+
+
 
 # References and Copyright Notice
 
