@@ -222,7 +222,7 @@ You never know how your model performs on new data, and you will cry.
 ## First Attempt: Train Test Split (by default 75%-25%)
 
 ### Code
-```
+```python
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 ```
@@ -235,7 +235,7 @@ Key idea: **You should only touch your test data once**.
 ## Second Attempt: Three-fold split (add validation set)
 
 ### Code
-```
+```python
 from sklearn.model_selection import train_test_split
 X_trainval, X_test, y_trainval, y_test = train_test_split(X, y)
 X_train, X_val, y_train, y_val = train_test_split(X_trainval, y_trainval)
@@ -253,7 +253,7 @@ We lose a lot of data for evaluation, and the results depend on the particular s
 Split data into multiple folds and built multiple models. Each time test models on different (unused) fold.
 
 ### Code
-```
+```python
 from sklearn.model_selection import cross_val_score
 scores = cross_val_score(knn, X_trainval, y_trainval, cv=10) # equiv to StratifiedKFold without shuffle
 ```
@@ -267,7 +267,7 @@ scores = cross_val_score(knn, X_trainval, y_trainval, cv=10) # equiv to Stratifi
 ## More CV strategies
 
 ### Code
-```
+```python
 from sklearn.model_selection import KFold, ShuffleSplit, StratifiedKFold
 kfold = KFold(n_splits=10)
 ss = ShuffleSplit(n_splits=30, train_size=.7, test_size=.3)
@@ -288,7 +288,7 @@ skfold = StratifiedKFold(n_splits=10)
 ## Final Attempt: Use GridSearch CV that wraps up everything
 
 ### Code
-```
+```python
 from sklearn.model_selection import GridSearchCV
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y)
@@ -306,21 +306,21 @@ print(grid.best_score_, grid.best_params_) #grid also has grid.cv_results_ which
 # Model: Neighbors
 
 ## KNN
-```
+```python
 from sklearn.neighbors import KNeighborsClassifier
 knn = KNeighborsClassifier(n_neighbors=5)
 knn.fit(X_train, y_train)
 ```
 
 ## Nearest Centroid (find the mean of each class, and predict the one that is closet; resulting in a linear boundary)
-```
+```python
 from sklearn.neighbors import NearestCentroid
 nc = NearestCentroid()
 nc.fit(X, y)
 ```
 
 ## Nearest Shrunken Centroid
-```
+```python
 nc = NearestCentroid(shrink_threshold=threshold)
 ```
 
@@ -337,15 +337,49 @@ nc = NearestCentroid(shrink_threshold=threshold)
 $$ \min_{w \in \mathbb{R}^d} \sum_{i=1}^d{||w^Tx_i - y_i||^2} $$
 
 ### Code
-```
+```python
 from sklearn.linear_model import LinearRegression
 lr = LinearRegression().fit(X_train, y_train)
 ```
 
-## Ridge
+## Ridge (l2-norm regularization)
+
+### Model
+$$ \min_{w \in \mathbb{R}^d} \sum_{i=1}^d{||w^Tx_i - y_i||^2 + \alpha ||w||_2^2} $$
+
+### Code
+```python
+from sklearn.linear_model import Ridge
+ridge = Ridge(alpha=10).fit(X_train, y_train) # takes alpha as a parameter
+print(ridge.coef_) #can get coefficients this way
 ```
-from sklearn.linear_model import LinearRegression
-lr = LinearRegression().fit(X_train, y_train)
+
+## Lasso (l1-norm regularization)
+
+### Model
+$$ \min_{w \in \mathbb{R}^d} \sum_{i=1}^d{||w^Tx_i - y_i||^2 + \alpha ||w||_1} $$
+
+### Code
+```python
+from sklearn.linear_model import Lasso
+lasso = Lasso(normalize=True, alpha=3, max_iter=1e6).fit(X_train, y_train)
+```
+
+### Note
+Lasso can (sort of) do feature selection because many coefficients will be set to 0. This is particularly useful when feature space is large.
+
+## Elastic Net (l1 + l2-norm regularization)
+
+### Model
+$$ \min_{w \in \mathbb{R}^d} \sum_{i=1}^d{||w^Tx_i - y_i||^2 + \alpha_1 ||w||_1 + \alpha_2 ||w||_2^2} $$
+
+### Code
+
+```python
+from sklearn.linear_model import ElasticNet
+
+enet = ElasticNet(alpha=alpha, l1_ratio=0.6)
+y_pred_test = enet.fit(X_train, y_train).predict(X_test)
 ```
 
 
