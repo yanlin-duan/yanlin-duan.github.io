@@ -817,7 +817,6 @@ To avoid overfitting, we usually tune (through GridSearchCV!) **one of** the fol
 - max_depth (how deep is the tree)
 - max_leaf_nodes (how many ending states)
 - min_sample_split (at least split that amount of sample)
-- max_sample_split
 
 Note that if we prune, the leaf will not be so pure, so we will come to a state where we are "X% certain that some data should be class A".
 
