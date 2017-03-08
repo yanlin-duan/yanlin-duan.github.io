@@ -489,7 +489,7 @@ OneHotEncoder(categorical_features=[0]).fit_transform(df.values).toarray()
 For high cardinality categorical features, instead of creating many dummy variables, we can create count-based new features based on it. For example, average response, likelihood, etc.
 
 
-# Feature Engineering and Feature selection
+# Feature Engineering and Feature Selection
 
 # Add polynomial features
 
@@ -729,7 +729,7 @@ Kernel SVM, in some sense, solves this problem. On one hand, we can enjoy the be
 
 Optimization theory tells us that the SVM problem can also be viewed as :
 
-$$ \hat{y} = sign (\sum_{i}^n {\alpha_i(x_i^T_x)}) $$
+$$ \hat{y} = sign (\sum_{i}^n {\alpha_i(x_i^Tx_i)}) $$
 
 Now, if we have a function $$\phi$$ that maps our feature space from some low dimension $d$ to high dimension $D$. In SVM dual problem, we then need to calculate the dot product:
 
