@@ -523,7 +523,7 @@ poly_lr.fit(X_train, y_train)
 - mutual_info_regression (Mutual Information, or MI, measures the dependency between variables)
 
 ### Code
-```
+```python
 from sklearn.feature_selection import f_regression
 f_values, p_values = f_regression(X, y)
 
@@ -746,6 +746,7 @@ Thankfully, [Mercer's theorem](https://en.wikipedia.org/wiki/Mercer's_theorem) t
 ## Note
 - The summation, multiplication of kernels are still kernel.
 - A kernel times a scaler is still a kernel.
+- RBF kernel stands for [Radial basis function kernel](https://en.wikipedia.org/wiki/Radial_basis_function_kernel). Gamma is the "bandwidth" of the function.
 - RBF kernel maps to infinite-dimensional: powerful but can easily overfit. Tune C and gamma for best performance
 - Consider to apply StandardScaler or MinMaxScaler for pre-processing.
 
