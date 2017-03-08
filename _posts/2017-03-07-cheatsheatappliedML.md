@@ -160,7 +160,7 @@ git log # show git log
 
 [^3]: Source: https://git-scm.com/book/en/v2/Getting-Started-Git-Basics
 
-- Fast-forward [^4] (Note that no new command is created):
+- Fast-forward [^4] (Note that no new commit is created):
 
 ![What is fast-forward](https://ariya.io/images/2013/09/merging.png)
 
