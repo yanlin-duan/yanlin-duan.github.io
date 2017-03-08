@@ -17,6 +17,16 @@ This semester I am taking Applied Machine Learning with [Andreas Mueller](http:/
 
 As the midterm is coming, I am revising for what we have covered so far in the class, and think that preparing a cheatsheet would be an effective way to do so (though the exam is closed book). I am posting my notes here so it can benefit more people.
 
+# References and Copyright Notice
+
+The notes are largely inspired by:
+
+- [Course material](https://amueller.github.io/applied_ml_spring_2017/) for COMS 4995 Applied Machine Learning
+- *Introduction to machine learning with python* by Mueller and Guido
+- *Applied predictive modeling* by Kuhn, Johnson
+
+Care has been taken to avoid copyrighted contents as much as possible, and give citation wherever is proper.
+
 # Introduction to Machine Learning
 
 ## Type of machine learnings
@@ -333,7 +343,7 @@ print(grid.best_score_, grid.best_params_) #grid also has grid.cv_results_ which
 ## Final Attempt 2: Use built-in CV for specific models
 
 ### Code
-```
+```python
 from sklearn.linear_model import RidgeCV
 ridge = RidgeCV().fit(X_train, y_train)
 print(ridge.score(X_test, y_test))
@@ -342,10 +352,33 @@ print(ridge.alpha_)
 ### Note
 - Usually those CV are more efficient.
 - Support: RidgeCV(), LarsCV(), LassoLarsCV(), ElasticNetCV(), LogisticRegressionCV().
+- We also have RFECV (efficient cv for recursive feature elimination)
 - All have reasonable built-in parameter grids.
 - For RidgeCV you can’t pick the “cv”!
 
 # Preprocessing
+
+## Dealing with missing data: Imputation
+
+In real life it's very common that the data set is not clean. There are missing values in it. We need to fill them in before training model using it.
+
+### Imputaion methods
+- Mean/median
+- KNN: find k nearest neighbors that have non-missing values and average their values; tricky if there is no feature that is always non-missing. (we need such to find nearest neighbors)
+- Model driven: Train regression model for missing values, can also do this iteratively. Very flexible methods
+- Iterative
+- fancyimpute: Has many methods; MICE (Reimplementation of Multiple Imputation by Chained Equations), more details [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3074241/)
+
+### Code
+```python
+from sklearn.preprocessing import Imputer
+imp = Imputer(strategy="mean").fit(X_train)
+X_mean_imp = imp.transform(X_train)
+
+# Use of fancyimpute
+import fancyimpute
+X_train_fancy_knn = fancyimpute.KNN().complete(X_train)
+```
 
 ## Scaling and Centering
 
@@ -368,7 +401,7 @@ deviation.
 - Normalizer: only considers angle, not length. Helpful for histograms, not that often used.
 
 ### Code
-```
+```python
 from sklearn.preprocessing import StandardScaler, RobustScaler, MinMaxScaler, Normalizer
 for scaler in [StandardScaler(), RobustScaler(), MinMaxScaler(), Normalizer(norm='l2')]:
     X_ = scaler.fit_transform(X)
@@ -382,7 +415,7 @@ We should perform `scaler.fit` only on training data!
 Pipelines are used to solve the common need of linking preprocessing, models, etc. together and prevents information leakage.
 
 ### Code
-```
+```python
 from sklearn.pipeline import make_pipeline
 pipe = make_pipeline(StandardScaler(), Lasso())
 pipe.fit(X_train, y_train)
@@ -413,7 +446,7 @@ Linear models and neural networks, for example, perform better when the features
 - Box-Cox only works on positive features!
 
 ### Code
-```
+```python
 from scipy import stats
 from sklearn.preprocessing import MinMaxScaler
 X_train_mm = MinMaxScaler().fit_transform(X_train) # Use MinMaxScaler to make all features positive
@@ -432,7 +465,7 @@ In theory, tree-based models do not care if you have categorical features. Howev
 
 ### One-hot Encoding (Turn k categories to k dummy variables)
 
-```
+```python
 import pandas as pd
 pd.get_dummies(df, columns=['boro'])
 
@@ -454,17 +487,81 @@ OneHotEncoder(categorical_features=[0]).fit_transform(df.values).toarray()
 For high cardinality categorical features, instead of creating many dummy variables, we can create count-based new features based on it. For example, average response, likelihood, etc.
 
 
-## Feature Engineering: Polynomial features
+# Feature Engineering and Feature selection
+
+# Add polynomial features
 
 Sometimes we want to add features to make our model stronger. One way is to add interactive features, i.e. polynomial features.
 
-### Code
-```
+## Code
+```python
 from sklearn.preprocessing import PolynomialFeatures
 poly_lr = make_pipeline(PolynomialFeatures(degree=3, include_bias=True, interaction_only=True), LinearRegression())
 poly_lr.fit(X_train, y_train)
 ```
 
+# Reduce (select) features
+
+## Why do this?
+- Prevent overfitting
+- Faster training and predicting
+- Less space (for both dataset and model)
+
+## Note
+- May remove important features!
+
+## Unsupervised feature selection
+- Variance-based: remove low variance ones (they are almost the same)
+- Covariance-based: remove correlated features
+- PCA
+
+## Supervised feature selection
+- f_regression (check p-value)
+- SelectKBest, SelectPercentile (Removes all but a user-specified highest scoring percentage of features), SelectFpr (FPR test, also checks p-value)
+- mutual_info_regression (Mutual Information, or MI, measures the dependency between variables)
+
+### Code
+```
+from sklearn.feature_selection import f_regression
+f_values, p_values = f_regression(X, y)
+
+from sklearn.feature_selection import mutual_info_regression
+scores = mutual_info_regression(X_train, y_train)
+```
+
+## Model-Based Feature selection
+
+### Idea
+- Build model, and select features that are most important to the model.
+- Can be done with SelectFromModel
+- Also can be implemented iteratively (Recursive Feature Elimination)
+- RFE can be called forward (if # of features required is small) or backwards
+- mlxtend package also implements a SequentialFeatureSelector
+
+### How is SequentialFeatureSelector different from Recursive Feature Elimination (RFE)
+> RFE is computationally less complex using the feature weight coefficients (e.g., linear models) or feature importance (tree-based algorithms) to eliminate features recursively, whereas SFSs eliminate (or add) features based on a user-defined classifier/regression performance metric.
+
+Source: http://rasbt.github.io/mlxtend/user_guide/feature_selection/SequentialFeatureSelector/
+
+### Code
+```python
+# SelectFromModel example
+from sklearn.feature_selection import SelectFromModel
+select_ridgecv = SelectFromModel(RidgeCV(), threshold="median")
+select_ridgecv.fit(X_train, y_train)
+print(select_ridgecv.transform(X_train).shape)
+
+# RFE example
+from sklearn.feature_selection import RFE
+rfe = RFE(LinearRegression(), n_features_to_select=3)
+rfe.fit(X_train, y_train)
+print(rfe.ranking_)
+
+# Sequential Feature selection
+from mlxtend.feature_selection import SequentialFeatureSelector
+sfs = SequentialFeatureSelector(LinearRegression())
+sfs.fit(X_train_scaled, y_train)
+```
 # Model: Neighbors
 
 ## KNN
@@ -618,12 +715,4 @@ It is Lasso model fit with Least Angle Regression a.k.a. Lars. More details [her
 ### Note
 Use when n_features >> n_samples
 
-# References and Copyright Notice
-
-The notes are largely inspired by:
-
-- [Course material](https://amueller.github.io/applied_ml_spring_2017/) for COMS 4995 Applied Machine Learning
-- *Introduction to machine learning with python* by Mueller and Guido
-- *Applied predictive modeling* by Kuhn, Johnson
-
-Care has been taken to avoid copyrighted contents as much as possible (images, code snippets, etc), and give citation wherever is proper.
+# Model: Support Vector Machine (Kernelized SVM)
