@@ -25,6 +25,8 @@ The notes are largely inspired by:
 - *Introduction to machine learning with python* by Mueller and Guido
 - *Applied predictive modeling* by Kuhn, Johnson
 
+Several code snippets below are modified based on the course note.
+
 Care has been taken to avoid copyrighted contents as much as possible, and give citation wherever is proper.
 
 # Introduction to Machine Learning
@@ -352,7 +354,7 @@ print(ridge.alpha_)
 ### Note
 - Usually those CV are more efficient.
 - Support: RidgeCV(), LarsCV(), LassoLarsCV(), ElasticNetCV(), LogisticRegressionCV().
-- We also have RFECV (efficient cv for recursive feature elimination)
+- We also have RFECV (efficient cv for recursive feature elimination) and CalibratedClassifierCV (Cross validation for calibration)
 - All have reasonable built-in parameter grids.
 - For RidgeCV you can’t pick the “cv”!
 
@@ -673,7 +675,7 @@ huber = HuberRegressor(epsilon=1, max_iter=100, alpha=1).fit(X, y)
 
 ## (Penalized) Logistic Regression
 
-### Model
+### Model (log loss)
 $$ \min_{w \in \mathbb{R}^d} - C\sum_{i=1}^N{\log(\exp(-y_iw^Tx_i) + 1)} + ||w||_1 $$
 $$ \min_{w \in \mathbb{R}^d} - C\sum_{i=1}^N{\log(\exp(-y_iw^Tx_i) + 1)} + ||w||_2^2 $$
 
@@ -696,7 +698,7 @@ logreg.fit(X_train, y_train)
 
 ## (Soft margin) Linear SVM
 
-### Model
+### Model (hinge loss)
 $$ \min_{w \in \mathbb{R}^d} C\sum_{i=1}^N{\max(0, 1-y_iw^Tx)} + ||w||_1 $$
 $$ \min_{w \in \mathbb{R}^d} C\sum_{i=1}^N{\max(0, 1-y_iw^Tx)} + ||w||_2^2 $$
 
@@ -852,4 +854,56 @@ from sklearn.ensemble import RandomForestClassifier
 rf = RandomForestClassifier(n_estimators=50).fit(X_train, y_train)
 ```
 
-###
+### Gradient Boosting
+
+- We iteratively add (shallow) regression trees and each tree will contribute a little.
+- Tune the learning_rate to change the n_estimators
+- Slower to train than Random Forest, but faster to predict
+- XGBoost has really good implementation for this.
+
+```python
+from sklearn.ensemble import GradientBoostingClassifier
+gbrt = GradientBoostingClassifier().fit(X_train, y_train)
+gbrt.score(X_test, y_test)
+```
+
+### Stacking
+
+The key idea of stacking is that we believe different types of models can learn some part of the problems, but maybe not the whole problem. So let us build multiple learners and learn their parts, and use their outputs as the intermediate prediction. Then we use that intermediate prediction as the input to another **second-step learner** (so called "stacked on the top"), and finally get the output.
+
+```python
+from sklearn.model_selection import cross_val_predict
+first_stage = make_pipeline(voting, reshaper)
+transform_cv = cross_val_predict(first_stage, X_train, y_train, cv=10, method="transform")
+second_stage = LogisticRegression(C=100).fit(transform_cv, y_train)
+print(second_stage.predict_proba(first_stage.transform(X_train)))
+```
+
+### Calibration
+
+When doing classification, we usually need to pickle a threshold for the model. By default, the threshold is 90%, meaning if the model is more than 50% certain that this is in class A, we should classify it as such.
+
+However, models may be wrong. For example, if we do not prune, the decision tree's leaf will be pure, meaning that the model is 100% sure that every data in this state should be in some class. This is largely untrue. Therefore, we need to *calibrate* the model: letting the model provide a correct measurement of uncertainty.
+
+- The usual way to do calibration that is to build another (1D) model that takes the classifier probability and predicts a better probability, hopefully similar to $$p(y)$$.
+- Platt scaling: $$f_{\text{platt}} = \frac{1}{1 + \exp(-s(x))}$$ is one way. Essentially it is equivalent to train a 1d logistic regression.
+- Isotonic Ression is another way. It finds a non-decreasing approximation of a function while minimizing the mean squared error on the training data.
+- Data to use: Either use hold-out set or cross-validation
+- Function to use: CalibratedClassifierCV
+
+```python
+from sklearn.calibration import CalibratedClassifierCV
+# first, train some random forest classifier
+rf = RandomForestClassifier(n_estimators=200).fit(X_train_sub, y_train_sub)
+
+# then, we use calibrated classifier cv on it
+cal_rf = CalibratedClassifierCV(rf, cv="prefit", method='sigmoid')
+cal_rf.fit(X_val, y_val)
+print(cal_rf.predict_proba(X_test)[:, 1])
+```
+
+## When to use tree-based models
+- When you want non-linear Relationship
+- When you want interpretable result (go with 1 tree)
+- When you want best performance (Gradient boosting is the common model for winners of Kaggle competition)
+- Many categorical data / Don't want to do feature engineering
