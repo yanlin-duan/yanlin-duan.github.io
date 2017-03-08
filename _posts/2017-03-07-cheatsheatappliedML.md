@@ -10,7 +10,7 @@ tags:
   - Learning Diary
 mathjax: true
 ---
-{% include toc.txt %}
+{% include toc %}
 
 # Why this post
 
