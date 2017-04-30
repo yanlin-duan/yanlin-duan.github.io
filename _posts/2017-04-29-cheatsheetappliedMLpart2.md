@@ -1,6 +1,6 @@
 ---
 title: "My Review Note for Applied Machine Learning (Second Half)"
-excerpt: "Good luck with the final!."
+excerpt: "Good luck with the final!"
 excerpt_separator: "<!--more-->"
 categories:
   - Machine Learning
@@ -71,11 +71,34 @@ As you can see from the sanity check question, it is not hard for models to achi
 
 ### Built-in standard metrics
 
-- $$R^2$$: a standardized measure of degree of predictedness, or fit, in the sample. Easy to understand scale. 
+- $$R^2$$: a standardized measure of degree of predictedness, or fit, in the sample. Easy to understand scale.
 - MSE: estimate the variance of residuals, or non-fit, in the population. Easy to relate to input
 - Mean Absolute Error, Median Absolute Error, Mean Absolute Percentage Error etc.
 - $$R^2$$ is still the most commonly used one.
 
 ## Sample code for choosing evaluation metrics in sklearn
 
+TODO.
+
+# Principal Component Analysis
+
+## What is PCA and why
+
+PCA rotates the dataset so that the rotated features are statistically uncorrelated. It first finds the direction of maximum variance, and then finds the direction that has maximum variance but at the same time **is orthogonal** to the first direction (thus making those two rotated features not correlated), so on and so forth.
+
+When to use: PCA is commonly used for dimension reduction (select up to first k principal components), visualization of high-dimensional data (draw first v.s. second principal components), regularization and feature extraction (for example, comparing distance in pixel space does not really make sense; maybe using PCA space will perform better)
+
+Whitening: rescale the principal components to have the same scale; Same as using StandardScaler after perfoming PCA.
+
+## Important notes
+
+- PCA, compared to histograms or other tools, is used because it can capture the interactions between features.
+- Do scaling before performing PCA. Imagine one feature with very large scale. Without scaling, it’s guaranteed to be the first principal component!
+- PCA is unsupervised, so it does not use any class information.
+- PCA has no guarantee that the top k principal components are the dimensions that **contains most information**. High variance $$!=$$ most information!
+- Max number of principal components min(n_samples, n_features).
+- Sign of the principal components does not mean **anything**.
+
+
+## Sample Code
 TODO.
