@@ -80,17 +80,23 @@ As you can see from the sanity check question, it is not hard for models to achi
 
 TODO.
 
-# Principal Component Analysis
+# Dimensionality Reduction
 
-## What is PCA and why
+## Linear, Unsupervised Transformation -- PCA
 
 PCA rotates the dataset so that the rotated features are statistically uncorrelated. It first finds the direction of maximum variance, and then finds the direction that has maximum variance but at the same time **is orthogonal** to the first direction (thus making those two rotated features not correlated), so on and so forth.
 
-When to use: PCA is commonly used for dimension reduction (select up to first k principal components), visualization of high-dimensional data (draw first v.s. second principal components), regularization and feature extraction (for example, comparing distance in pixel space does not really make sense; maybe using PCA space will perform better)
+When to use: PCA is commonly used for linear dimension reduction (select up to first k principal components), visualization of high-dimensional data (draw first v.s. second principal components), regularization and feature extraction (for example, comparing distance in pixel space does not really make sense; maybe using PCA space will perform better)
 
 Whitening: rescale the principal components to have the same scale; Same as using StandardScaler after perfoming PCA.
 
-## Important notes
+### Why PCA (in general) works
+
+PCA finds uncorrelated components that maximizes the variance explained in the data. However, only when the data follows Gaussian distribution, zero correlation between components implies independence, as the first and second order statistics already captures all the information. This is not true for most of the other distributions. 
+
+Therefore, PCA 'sort of' makes an implicit assumption that data is drawn from Gaussian, and works the best when representing multivariate normally distributed data.
+
+### Important notes
 
 - PCA, compared to histograms or other tools, is used because it can capture the interactions between features.
 - Do scaling before performing PCA. Imagine one feature with very large scale. Without scaling, it’s guaranteed to be the first principal component!
@@ -100,5 +106,34 @@ Whitening: rescale the principal components to have the same scale; Same as usin
 - Sign of the principal components does not mean **anything**.
 
 
-## Sample Code
+### Sample Code
 TODO.
+
+
+## Non-linear, unsupervised transformation - t-SNE
+
+t-distributed stochastic neighbor embedding (t-SNE) is an algorithm in the category of manifold learning. The high level idea of t-SNE is that it will find a two-dimensional representation of the data such that if they are 'similar' in high-dimension, they will be 'closer' in the reduced 2D space. To put it in another way, it tries to preserve the neighborhood information.
+
+How t-SNE works: it starts with a random embedding, and iteratively updates points to make close points close.
+
+The usage for t-SNE is now more on data visualization.
+
+### Note
+- t-SNE does not support transforming new data, so no transform method in sklearn
+- Axes do not correspond to anything in the input space, so merely for visualization purpose.
+- To tune t-SNE, tune perplexity (low perplxity == only close neighbors) and early_exaggeration parameters, though the effects are usually minor.
+
+
+## Linear, supervised transformation -- Linear Discriminant Analysis
+
+
+![Comparison Between PCA and LDA](http://sebastianraschka.com/images/blog/2014/linear-discriminant-analysis/lda_1.png) [^1]
+
+[^1]: Source: http://sebastianraschka.com/Articles/2014_python_lda.html#principal-component-analysis-vs-linear-discriminant-analysis
+
+Linear Discriminant Analysis is a “supervised” generative model that computes the directions (“linear discriminants”) that will maximize the separation between multiple classes. LDA assumes data to be drawn from Gaussian distributions (just as PCA, but for each class). It further assumes that features are statistically independent, and identical covariance matrices for every class.
+
+LDA can be used both as a classifier and a dimensionality reduction techinique. The advantage is that it is a supervised model, and there's no parameters to tune. It is also very fast since it only needs to compute means and invert covariance matrices (if number of features is way less than number of samples).
+
+A variation is Quadratic Discriminant Analaysis, where basically each class will have separate covariance matrices.
+
