@@ -112,7 +112,7 @@ Furthermore, we have normalized mutual information (which penalizes overpatition
 
 Formula:
 
-For each sample, calculate $$ s = \frac{b-1}{\max(a,b)}$$, where $$a$$ is mean distance to samples in same cluster, $$b$$ is the mean distance to samples in nearest cluster.
+For each sample, calculate $$ s = \frac{b-a}{\max(a,b)}$$, where $$a$$ is mean distance to samples in same cluster, $$b$$ is the mean distance to samples in nearest cluster.
 
 For whole clustering, we average s over all samples.
 
@@ -814,6 +814,16 @@ vectors = [model.infer_vector(train_corpus[doc_id].words) for doc_id in range(le
 Other things:
 
 [GloVe: Global Vectors for Word Representation](https://nlp.stanford.edu/projects/glove/)
+
+# Neural Networks
+
+Neural networks is a non-linear model for both classification and regression. It works particularly well when the data set is large. It can basically learn any (continuous) functions. It is a non-convex optimization and is very slow to train (so need GPU resources) There are many variants on this and it is an active research field in machine learning.
+
+## General architecture
+
+
+
+
 
 
 
