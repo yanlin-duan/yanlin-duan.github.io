@@ -233,7 +233,7 @@ Note:
 
 ## Kernel Density[^4]
 
-![Kernel density vs Histogram](({{ site.url }}/assets/pics/Kernel-Density-EstimationKDE.png))
+![Kernel density vs Histogram]({{ site.url }}/assets/pics/Kernel-Density-EstimationKDE.png)
 
 [^4]: Source: http://www.dataivy.cn/blog/%E6%A0%B8%E5%AF%86%E5%BA%A6%E4%BC%B0%E8%AE%A1kernel-density-estimation_kde/
 
@@ -821,6 +821,17 @@ Neural networks is a non-linear model for both classification and regression. It
 
 ## General architecture
 
+The general architecture of (vanilla) neural networks looks like this:
+
+Input -> Hidden Layer 1 -> Non-linearity -> Hidden Layer 2 -> Non-linearity -> ... -> Hidden Layer n -> (Different) Non-linearity -> Output
+
+Where each layer contains many unit of neuron. For non-linearity, some common selections include: sigmoid, tanh, relu (rectifying linear function). For the last non-linearity though, we usually use a different function: identity for regression, and soft-max for classification.
+
+## Back-propagation
+
+Back-propagation provides a way to compute the update of the weights easily. It combines chain rule and dynamic programming to systematically calculate partial derivatives layer by layer, starting from the last layer, without doing duplicate works. 
+
+**Note that back-propagation itself does not optmize the weights of a neural network** -- It is gradient descent or other optimizer that optimizes the weight.
 
 
 
