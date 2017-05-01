@@ -124,7 +124,28 @@ Cons: While compact clusters are good, compactness doesn’t allow for complex s
 
 ## Sample code for choosing evaluation metrics in sklearn
 
-TODO.
+
+```python
+# default scoring for classification is accuracy
+scores_default = cross_val_score(SVC(), X, y)
+
+# providing scoring="accuracy" doesn't change the results
+explicit_accuracy =  cross_val_score(SVC(), X, y, scoring="accuracy")
+
+# using ROC AUC
+roc_auc =  cross_val_score(SVC(), X, digits.target == 9, scoring="roc_auc")
+
+# Implement your own scoring function
+def few_support_vectors(est, X, y):
+    acc = est.score(X, y)
+    frac_sv = len(est.support_) / np.max(est.support_)
+    # I just made this up, don't actually use this
+    return acc / frac_sv
+
+param_grid = {'C': np.logspace(-3, 2, 6)}
+grid = GridSearchCV(SVC(), param_grid=param_grid, cv=10, scoring=few_support_vectors)
+```
+
 
 # Dimensionality Reduction
 
@@ -155,7 +176,15 @@ Therefore, PCA 'sort of' makes an implicit assumption that data is drawn from Ga
 
 
 ### Sample Code
-TODO.
+
+```python
+pca_lr = make_pipeline(StandardScaler(), PCA(n_components=2), LogisticRegression(C=1))
+pca_lr.fit(X_train, y_train)
+
+pca = PCA(n_components=100, whiten=True, random_state=0).fit(X_train)
+X_train_pca = pca.transform(X_train)
+X_test_pca = pca.transform(X_test)
+```
 
 ## Unsupervised Transformation -- NMF
 
