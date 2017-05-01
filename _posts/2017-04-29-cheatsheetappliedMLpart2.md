@@ -136,6 +136,7 @@ When to use: PCA is commonly used for linear dimension reduction (select up to f
 
 Whitening: rescale the principal components to have the same scale; Same as using StandardScaler after perfoming PCA.
 
+
 ### Why PCA (in general) works
 
 PCA finds uncorrelated components that maximizes the variance explained in the data. However, only when the data follows Gaussian distribution, zero correlation between components implies independence, as the first and second order statistics already captures all the information. This is not true for most of the other distributions. 
@@ -150,11 +151,37 @@ Therefore, PCA 'sort of' makes an implicit assumption that data is drawn from Ga
 - PCA has no guarantee that the top k principal components are the dimensions that **contains most information**. High variance $$!=$$ most information!
 - Max number of principal components min(n_samples, n_features).
 - Sign of the principal components does not mean **anything**.
+- There's cancellation effects because of the negative components.
 
 
 ### Sample Code
 TODO.
 
+## Unsupervised Transformation -- NMF
+
+NMF stands for non-negative matrix factorization. It is similar to PCA in the sense that it is also a linear, unsupervised transformation. But instead of requiring each componenet to be orthogonal, we want the coefficients to be non-negative in NMF. Therefore, NMF only works to data where each feature is non-negative.
+
+Pros:
+
+- NMF leads to more interpretable components than PCA
+- No cancellation effect like PCA
+- No sign ambiguity like in PCA
+- Can learn over-complete representation (components more than features) by asking for sparsity
+- Can be vised as a soft clustering
+- Traditional Nonnegative Matrix Factorization (NMF) is a linear and unsupervised algorithm. But there are novice ones that can extract non-linear features (http://ieeexplore.ieee.org/document/7396284/?reload=true)
+
+
+Cons:
+- Only works on non-negative data
+- Can be slow on large datasets
+- Coefficients not orthogonal
+- Components in NMF are not ordered -- all play an equal part (also can be a pro)
+- Number of components totally change the set of components.
+- Non-convex optimization; Randomness involved in initialization
+
+Other matrix factorizations:
+- Sparse PCA: components orthogonal & sparse 
+- ICA: independent components
 
 ## Non-linear, unsupervised transformation - t-SNE
 
@@ -182,6 +209,89 @@ Linear Discriminant Analysis is a “supervised” generative model that compute
 LDA can be used both as a classifier and a dimensionality reduction techinique. The advantage is that it is a supervised model, and there's no parameters to tune. It is also very fast since it only needs to compute means and invert covariance matrices (if number of features is way less than number of samples).
 
 A variation is Quadratic Discriminant Analaysis, where basically each class will have separate covariance matrices.
+
+# Outlier detection
+
+## Elliptic Envelope
+
+Assumption:
+
+Data come from a known distribution (for example, Gaussian distribution).
+
+
+Rationale: 
+Define the “shape” of the data, and can define outlying observations as observations which stand far enough from the fit shape.
+
+
+Implementation:
+- estimate the inlier location and covariance in a robust way (i.e. whithout being influenced by outliers). 
+- The [Mahalanobis distances](https://en.wikipedia.org/wiki/Mahalanobis_distance) obtained from this estimate is then used to derive a measure of outlyingness.
+
+Note:
+- Only works if Gaussian assumption is reasonable
+- Preprocessing with PCA might help
+
+## Kernel Density[^4]
+
+![Kernel density vs Histogram](http://www.dataivy.cn/wp-content/uploads/2015/04/Kernel-Density-EstimationKDE.png)
+
+[^4]: Source: http://www.dataivy.cn/blog/%E6%A0%B8%E5%AF%86%E5%BA%A6%E4%BC%B0%E8%AE%A1kernel-density-estimation_kde/
+
+Kernel density estimation is a non-parametric density model. Essentially it is a natural extension of histogram. The density function for histogram is not smooth, and it can be largely affected by the width of the bin. Finally, histogram won't work with high-dimension data -- all these problems can be addressed by kernel density estimation.
+
+Code:
+
+```python
+kde = KernelDensity(bandwidth=3)
+kde.fit(X)
+pred = kde.score_samples(X_test)
+```
+
+## One class SVM
+
+One class SVM also uses Gaussian kernel to cover data. It requires the choice of a kernel and a scalar parameter to define a frontier. The RBF kernel is usually chosen as the kernel. The $$\nu$$ parameter, also known as the margin of the One-Class SVM (percentage of training mistakes), corresponds to the probability of finding a new, but regular, observation outside the frontier.
+
+Note:
+
+As usual for SVM, do standard scaler before applying OneClassSVM is common practice.
+
+Code:
+
+```python
+from sklearn.svm import OneClassSVM
+oneclass = OneClassSVM(nu=0.1).fit(X)
+pred = oneclass.predict(X_test).astype(np.int)
+```
+
+## Isolation Forests
+
+The idea is to build a random tree and we expect that outliers are easier to isolate from the rest, since it is alone. Then we consider the path length for isolating each data point to determine who's the outlier.
+
+### Normalizing path length
+
+$$c(n) = 2H(n-1) - (2(n-1)/n)$$
+
+$$s(x,n) = 2^{-\frac{E(h(x))}{c(n)}}$$, where $h$ is the depth of the tree.
+
+s close to 1 meaning it is likely to be outlier.
+
+
+### Building the forest
+
+- Subsample dataset for each tree 
+- Default sample size of 256 works surprisingly well
+- Stop growing tree at depth $$\log_2{n}$$ –- so 8 No bootstrapping usually 
+- The more trees the better (default is 100 trees)
+- Need to specify contamination rate (float in 0 to 0.5), default 0.1.
+
+Code:
+
+```python
+from sklearn.ensemble import IsolationForest
+clf = IsolationForest(max_samples=100, random_state=4, contamination=0.05)
+clf.fit(X_train)
+y_pred_train = clf.predict(X_train)
+```
 
 # Working with imbalanced data
 
