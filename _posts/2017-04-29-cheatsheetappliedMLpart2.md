@@ -76,6 +76,52 @@ As you can see from the sanity check question, it is not hard for models to achi
 - Mean Absolute Error, Median Absolute Error, Mean Absolute Percentage Error etc.
 - $$R^2$$ is still the most commonly used one.
 
+## Clustering (supervised evaluation)
+
+When evaluating clustering with the ground truth, note that labels do not matter -- [0,1,0,1] is exactly the same as [1,0,1,0]. We should only look at **partition**.
+
+### Why can't we use accuracy score
+
+The problem in using accuracy in clustering problem is that it requires *exactly match* between the ground truth and the predicted label. However, the cluster labels themselves are meaningless -- as mentioned above, we should only care about partition, not labels!
+
+### Contigency matrix
+One tool we will use is contingency matrix. It is similar as confusion matrix, except that it does not have to square, and switching of rows/columns will not change the result.
+
+### Rand Index, Adjusted Rand Index, Normalized Mutual Information and Adjusted Mutual Information
+
+Rand index measures the similarity between two clustering. The formula is $$RI(C_1,C_2) = \frac{a+b}{{n}\choose{2}}$$, where $$a$$ is the number of pairs of points that are in the same set in both cluster $$C_1$$ and $$C_2$$, while $b$ is the number of pairs of points that are in different sets in $C_1$ and $C_2$. The denominator is just number of all possible pairs.
+
+It can be intuitively understood if we view each pair as a data point, and treat this problem as using $$C_2$$ to predict $$C_1$$ (the ground truth). (Or the other way around, it's symmetric).
+
+We count the number of true positive (they are in the same cluster in $$C_1$$, and $$C_2$$ predicts that they are also in a same cluster), plus the number of true negative (they are not in the same cluster in $$C_1$$, and $$C_2$$ predicts that they are also not in a same cluster) Sounds familiar now? Yes, it is just an analogy of accuracy!
+
+**Sanity Check Question: What is R([0,1,0,1], [1,0,0,2])?**
+
+Rand Index always ranges between 0 and 1. The bigger the better.
+
+Adjusted Rand Index (ARI) is introduced to ensure to have a value close to 0.0 for random labeling independently of the number of clusters and samples and exactly 1.0 when the clusterings are identical (up to a permutation). **ARI penalizes too many clusters**. **ARI can become negative**.
+
+Note: ARI requires the knowledge of ground truth. Therefore, **ARI is not a practical way to assess clustering algorithms like K-Means.**
+
+Furthermore, we have normalized mutual information (which penalizes overpatitions via entropy) and adjusted mutual information (adjust for chance, so any two random partitions have expected AMI of 0).
+
+
+## Clustering (unsupervised evaluation)
+
+### Silhouette Score
+
+Formula:
+
+For each sample, calculate $$ s = \frac{b-1}{\max(a,b)}$$, where $$a$$ is mean distance to samples in same cluster, $$b$$ is the mean distance to samples in nearest cluster.
+
+For whole clustering, we average s over all samples.
+
+This scoring prefers compact clusters (like K-means).
+
+Rationale: we want to maximize the difference between $$b$$ and $$a$$, so that the result is *decoupling and cohesion* (sounds like object-oriented programming hah?)
+
+Cons: While compact clusters are good, compactness doesn’t allow for complex shapes.
+
 ## Sample code for choosing evaluation metrics in sklearn
 
 TODO.
@@ -203,6 +249,16 @@ Pros: As cheap as undersampling, but much better results
 
 Cons: Not easy to do right now with sklearn and imblearn
 
+```python
+# Code for Easy Ensemble
+probs = [] 
+for i in range(n_estimators):
+	est = make_pipe(RandomUnderSampler(), DecisionTreeRegressor(random_state=i))
+	est.fit(X_train, y_train)
+	probs.append(est.predict_probab(X_test, y_test)) 
+pred = np.argmax(np.mean(probs, axis=0), axis=1)
+```
+
 ### Edited Nearest Neighbors
 
 Remove all samples that are misclassified by KNN from training data (mode) or that have any point from other class as neighbor (all). Can be used to clean up outliers or boundary cases.
@@ -234,17 +290,185 @@ scores = cross_val_score(cnn_pipe, X_train, y_train, cv=10)
 
 Add synthetic (artificial) interpolated data to minority class.
 
-Algorithm:
-- picking random neighbors from k neighbors
-- pick a point on the line between those two uniformly
-- repeat
+Algorithm
+- picking random neighbors from k neighbors.
+- pick a point on the line between those two uniformly.
+- repeat.
 
-Pros: allows adding new interpolated samples, which works well in practice; There are many more advanced variants based on SMOTE
+Pros: allows adding new interpolated samples, which works well in practice; There are many more advanced variants based on SMOTE.
 
-Cons: leads to very large datasets (as it is doing oversampling), but can be mitigated by combining with undersampled data
+Cons: leads to very large datasets (as it is doing oversampling), but can be mitigated by combining with undersampled data.
 
 ```python
 from imblearn.over_sampling import SMOTE
 smote_pipe = make_imb_pipeline(SMOTE(), LogisticRegressionCV())
 scores = cross_val_score(smote_pipe, X_train, y_train, cv=10)
 ```
+
+# Clustering and Mixture Model
+
+## K-Means algorithm
+
+Algorithm:
+- Pick number of clusters k.
+- Pick k random points as “cluster center”.
+- While cluster centers change:
+	– Assign each data point to it’s closest cluster center.
+	- Recompute cluster centers as the mean of the assigned points.
+
+Code:
+
+```python
+km = KMeans(n_clusters=5, random_state=42)
+km.fit(X)
+print(km.cluster_centers_.shape)
+# km.labels_ is basically the predict
+print(km.labels_shape)
+print(km.predict(X).shape)
+```
+
+Note:
+- Clusters are Voronoi-diagrams of centers, so always convex in space.
+- Cluster boundaries are always in the middle of the centers.
+- Cannot model covariance well.
+- Cannot 'cluster' complicated shape (say two-moons dataset, which I usually refer to as the dataset where two bananas "interleaving" together).
+- K-means performance relies on initialization. By default K-means in sklearn does 10 random restarts with different initializations.
+- When dataset is large, consider using random, in particular for MiniBatchKMeans.
+- k-means can also be used as fetaure extraction, where cluster membership is the new categorical feature and cluster distance is the continuous feature.
+
+## Agglomerative clustering
+
+Algorithm:
+- Start with all points in their own cluster.
+- Greedily merge the two most similar clusters until reaching number of samples required.
+
+Merging criteria:
+- Complete link (smallest maximum distance).
+- Average linkage (smallest average distance between all pairs in the clusters.
+- Single link (smallest minimum distance).
+- Ward (smallest increase in with-in cluster variance, which normally leads to more equally sized clusters).
+
+Pros:
+- Can restrict to input “topology” given by any graph, for example neighborhood graph.
+- Fast with sparse connectivity.
+- Hierarchical clustering gives more holistic view, can help with picking the number of clusters.
+
+Cons:
+- Some linkage criteria may lead to very imbalanced cluster sized (depending on the scenario, it can be a benefit!).
+
+Code:
+
+```python
+from sklearn.cluster import AgglomerativeClustering
+for connectivity in (None, knn_graph):
+	for linkage in ('ward', 'average', 'complete'):
+		clustering = AgglomerativeClustering(linkage=linkage, connectivity=connectivity, n_clusters=10)
+		clustering.fit(X)
+```
+
+## DBSCAN
+
+Algorithm:
+
+- Sample is "core sample" if more than min_samples is within epsilon ("dense region").
+- Start with a core sample.
+- Recursively walk neighbors that are core-samples and add to cluster.
+- Also add samples within epsilon that are not core samples (but don’t recurse)
+- If can’t reach any more points, pick another core sample, start new cluster.
+- Remaining points are labeled outliers.
+
+Pros:
+- Can cluster well in complex custer shapes (two-moons would work!)
+- Can detect outliers
+
+Cons:
+- Needs to adjust parameters (epsilon is hard to pick)
+
+
+## Mixture Models
+
+(Gaussian) Mixture Model is a generative model, where we assume that the data is formed in a generating process.
+
+Assumptions:
+– Data is mixture of small number of known distributions (in GMM, it's Gaussian). Each mixture component follows some other distribution (say, multinomial)
+– Each mixture component distribution can be learned “simply”.
+– Each point comes from one particular component.
+
+EM algorithm:
+- This is a non-convex optimization problem, so gradient descent won't work well.
+- Instead, sometimes local minimum is good enough, and we can get there through Expectation Maximization algorithm (EM)
+
+Code:
+```python
+from sklearn.mixture import GassuainMixture
+gmm = GaussianMixture(n_components=3)
+gmm.fit(X)
+print(gmm.means_) # If X is of two dimension, returns 3 2D vectors
+print(gmm.covariances_) # If X is of two dimension, returns 3 2x2 matrices
+gmm.predict_proba(X) # For each data point, what is the probability of it being in each of the three classes?
+print(gmm.score(X)) # Compute the per-sample average log-likelihood of the given data X.
+print(gmm.score_samples(X)) # Compute the weighted log probabilities for each sample. Returns an array
+```
+
+Note:
+- In high dimensions, covariance=”full” might not work.
+- Initialization matters. Try restarting with different initializations.
+- It allows partial_fit, meaning you can evaluate the probability of a new point under a fitted model.
+
+## Bayesian Infinite Mixtures
+
+Note:
+- Bayesian treatment adds priors on mixture coefficients and Gaussians, and can unselect components if they do not contribute, so it is possibly more robust.
+- Infinite mixtures replace Dirichlet prior over mixture coefficients by Dirichlet process, so it can automatically find number of components based on prior.
+- Use variational inference (as opposed to gibbs sampling).
+- Needs to specify upper limit of components.
+
+
+## A zoo of clustering algorithm [^2]
+
+![Plot cluster comparison](http://scikit-learn.org/dev/_images/sphx_glr_plot_cluster_comparison_001.png)
+
+[^2]: Source: http://scikit-learn.org/dev/auto_examples/cluster/plot_cluster_comparison.html
+
+## On picking the "correct" number of clusters
+
+Sometimes, the right number of clusters does not even have a deterministic answer. So very likely manual check needs to be involved at the end.
+
+But there are some tools that may be helpful:
+
+### Silhouette Plots [^3]
+
+![Silhouette plots](http://scikit-learn.org/stable/_images/sphx_glr_plot_kmeans_silhouette_analysis_005.png)
+
+[^3]: Source: http://scikit-learn.org/stable/auto_examples/cluster/plot_kmeans_silhouette_analysis.html
+
+### Cluster Stability
+
+The idea is that the configuration that yields the most consistent result among perturbations is best.
+
+Idea:
+
+- Draw bootstrap samples
+- Do clustering
+- Store clustering outcome using origial indices
+- Compute averaged ARI
+
+
+### Qualitative Evaluation (Fancy name for eyeballing)
+
+Things to look at:
+- Low-dimension visualization
+- Individual points
+- Clustering centers (if available)
+
+### GridSearchCV (if doing feature extraction)
+
+```python
+km = KMeans(n_init = 1, init = "random")
+pipe = make_pipeline(km, LogisticRegression())
+param_grid = {'kmeans__n_clusters': [10, 50, 100, 200, 500]}
+grid = GridSearchCV(pipe, param_grid, cv=5)
+grid.fit(X,y)
+``` 
+
+n_clusters: For preprocessing, larger is often better; for exploratory analysis: the one that tells you the most about the data is the best.
