@@ -89,7 +89,7 @@ One tool we will use is contingency matrix. It is similar as confusion matrix, e
 
 ### Rand Index, Adjusted Rand Index, Normalized Mutual Information and Adjusted Mutual Information
 
-Rand index measures the similarity between two clustering. The formula is $$RI(C_1,C_2) = \frac{a+b}{{n}\choose{2}}$$, where $$a$$ is the number of pairs of points that are in the same set in both cluster $$C_1$$ and $$C_2$$, while $b$ is the number of pairs of points that are in different sets in $C_1$ and $C_2$. The denominator is just number of all possible pairs.
+Rand index measures the similarity between two clustering. The formula is $$RI(C_1,C_2) = \frac{a+b}{n \choose 2}$$, where $$a$$ is the number of pairs of points that are in the same set in both cluster $$C_1$$ and $$C_2$$, while $b$ is the number of pairs of points that are in different sets in $C_1$ and $C_2$. The denominator is just number of all possible pairs.
 
 It can be intuitively understood if we view each pair as a data point, and treat this problem as using $$C_2$$ to predict $$C_1$$ (the ground truth). (Or the other way around, it's symmetric).
 
