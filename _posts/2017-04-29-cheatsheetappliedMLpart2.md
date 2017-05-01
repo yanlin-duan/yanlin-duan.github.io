@@ -271,7 +271,7 @@ The idea is to build a random tree and we expect that outliers are easier to iso
 
 $$c(n) = 2H(n-1) - (2(n-1)/n)$$
 
-$$s(x,n) = 2^{-\frac{E(h(x))}{c(n)}}$$, where $h$ is the depth of the tree.
+$$s(x,n) = 2^{-\frac{E(h(x))}{c(n)}}$$, where $$h$$ is the depth of the tree.
 
 s close to 1 meaning it is likely to be outlier.
 
@@ -650,7 +650,7 @@ Stop words on bi-gram or 4-gram drastically reduces number of features.
 
 *We can do Tf-idf rescaling.*
 
-$$tf-idf(t,d) = tf(t,d) \cdot (\log{\frac{1+n_d}{1+df(d,t}} + 1)
+$$tf-idf(t,d) = tf(t,d) \cdot (\log{\frac{1+n_d}{1+df(d,t}} + 1)$$
 
 Tf-idf emphasizes rare words, so acting like a soft stop word removal.
 
