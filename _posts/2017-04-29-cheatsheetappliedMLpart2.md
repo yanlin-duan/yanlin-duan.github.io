@@ -16,7 +16,7 @@ mathjax: true
 
 This semester I am taking Applied Machine Learning with [Andreas Mueller](http://amueller.github.io/). It's a great class focusing on the practical side of machine learning.
 
-I received many positive feedbacks for my review note of the first half of the class. I am therefore motivated to continue working on a similar post for the second half. Again, I am posting my notes on my blog so it can benefit more people, whether he/she is in the class or not :)
+I received many positive feedbacks for my review note of the first half of the class. I am therefore motivated to continue working on a similar post for the second half. Again, I am posting my notes on my blog so it can benefit more people, no matter he/she is in the class or not :)
 
 # Acknowledgment
 
@@ -154,6 +154,7 @@ y_pred = lr.predict_proba(X_test)[:, 1] > .85 # change threshold to 0.85
 Drop data from the majority class randomly, until balanced.
 
 Pros: very fast training, really good for large datasets
+
 Cons: Loses data
 
 ```python
@@ -176,6 +177,7 @@ scores = cross_val_score(undersample_pipe, X_train, y_train, cv=10)
 Repeat data from the minority class randomly, until balanced.
 
 Pros: more data (although many duplication)
+
 Cons: MUCH SLOWER (and sometimes, the accuracy will get lower)
 
 ```python
@@ -198,6 +200,7 @@ scores = cross_val_score(LogisticRegression(class_weight="balanced"), X_train, y
 Random resampling for each model, and then ensemble them.
 
 Pros: As cheap as undersampling, but much better results
+
 Cons: Not easy to do right now with sklearn and imblearn
 
 ### Edited Nearest Neighbors
@@ -207,7 +210,8 @@ Remove all samples that are misclassified by KNN from training data (mode) or th
 ```python
 from imblearn.under_sampling import EditedNearestNeighbours
 
-# what? it's NearestNeighbours with u and n_neighbors without u @.@ Great API design...
+# what? it's NearestNeighbours with u and n_neighbors without u 
+# @.@ Great API design...
 enn = EditedNearestNeighbours(n_neighbor=5) 
 X_train_enn, y_train_enn = enn.fit_sample(X_train, y_train)
 
@@ -236,6 +240,7 @@ Algorithm:
 - repeat
 
 Pros: allows adding new interpolated samples, which works well in practice; There are many more advanced variants based on SMOTE
+
 Cons: leads to very large datasets (as it is doing oversampling), but can be mitigated by combining with undersampled data
 
 ```python
