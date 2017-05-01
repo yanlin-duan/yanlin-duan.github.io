@@ -701,3 +701,120 @@ Pro:
 Con:
 - Can’t interpret results 
 - Hard to debug
+
+### Beyond Bag of Words
+
+When doing bag of words, it is hard to capture the semantics of words. Also, synonymous words are not presented, and the representation of documents is very distributed. We are considering other ways to represent a document
+
+*Latent Semantic Analysis (LSA)*
+
+- Reduce dimensionality of data.
+- **Can’t use PCA: can’t subtract the mean (sparse data)**
+- Instead of PCA: Just do SVD, truncate. 
+- "Semantic" features, dense representation. 
+- Easy to compute – convex optimization
+
+```python
+from sklearn.preprocessing import MaxAbsScaler
+# To get rid of some dominating words in a lot of components
+X_scaled = MaxAbsScaler().fit_transform(X_train)
+
+from sklearn.decomposition import TruncatedSVD
+lsa = TruncatedSVD(n_components=100)
+X_lsa = lsa.fit_transform(X_scaled)
+```
+
+*Topic Models*
+
+We view each document as a mixture of topics. For example, this document can be viewed as a mixture of computer science, applied machine learning and review notes (really bad topic selection...)
+
+We can do NMF for topic models, where we decompose the matrix (document x words) to H and W where H is topic proportions per document and W is topics.
+
+We can also do LDA -- Latent Dirichlet Allocation for topic modelling. LDA is a Bayesian graphical generative probabilistic model. The learning is done through probabilistic inference. This is a **non-convex optimization** and solving it can even be harder than mixture models.
+
+Two solvers:
+- Gibbs sampling using MCMC: very accurate but very slow
+- Variational inference: faster, less accurate, championed by [Prof. David Blei](http://www.cs.columbia.edu/~blei/)
+
+Rule of thumbs for picking solver:
+- Less than 10k documents: use Gibbs sampling
+- Medium data: variational inference
+- Large data: Stochastic Variational Inference (which allows partial_fit for online learning)
+
+
+### Word embedding
+
+Before we are embedding documents into a continuous, corpus-specific space. Another approach is to embed **words** in a general space. We want this embedding to preserve some properties: for example: two words that are semantically close should be closer in the mapped vector space. 
+
+For example: if we have three words: ape, human and intelligence. If we were using one-hot encoding, we would represent each as [1,0,0], [0,1,0] and [0,0,1], which is sparse and unnecessary (esp when we have A LOT OF WORDS!).
+
+Word embedding may choose to represent them as [0,1], [0.4,0.9] and [1,0]. We have lower dimension, and we kind of preserve the semantics.
+
+As an illustration, see the picture below[^5]:
+
+[^5]: Source: https://www.zhihu.com/question/32275069
+
+![Word embedding](https://pic2.zhimg.com/1cd37c9bac3b7503801d5a812d1a1b01_b.png)
+
+*CBOW*
+
+C-BOW stands for continuous bag-of-words. It tries to **predict the word given its context**. Prediction is done using a one-hidden-layer neural net, where the hidden layer corresponds to the size of the embedding vectors. The prediction is done using softmax. The model is learned using SGD sampling words and contexts from the training data.
+
+*Skip-gram*
+
+Skip-gram takes the word itself as input and **predict the context given the word**. You're "skipping" the current word (and potentially a bit of the context) in your calculation and that's why it is called skip-gram. The result can be more than one word depending on your skip window. Skip-gram is better for infrequent words than CBOW.
+
+*Wait... but why we are doing that?*
+
+We don't really care about the result of CBOW or Skip-gram. Even if we do, the thing that relates to word embedding is that **we hope the neural network will learn some useful representation of words in the hidden layer**, and that, as a by-product, is what we want here.
+
+*Gensim*
+
+Gensim has multiple LDA implements and has great tools for analyzing topic models.
+
+```python
+texts = [["good", "luck", "with", "your", "final"], ["get", "good", "grade"]]
+from gensim import corpora
+dictionary = corpora.Dictionary(texts)
+
+corpus = [dictionary.doc2bow(text) for text in texts]
+
+# To convert to sparse matrix
+gensim.matutils.corpus2csc(corpus)
+
+# To convert from sparse matrix
+sparse_corpus = gensim.matutils. Sparse2Corpus(X.T)
+
+# Tf-idf with gensim
+tfidf = gensim.models.TfidfModel(corpus)
+
+# Tokenize the input using only words that appear in the vocabular used in the pre-trained model
+vect2_w2v = CountVectorizer(vocabular=w.index2word).fit(text)
+
+# Examples with Gensim
+w.most_similar(positive=["Germany","pizza"], negative=["Italy"], topn=3)
+```
+
+**There may be stereotype / bias involved here!! (Ethics alert)**
+
+
+We can also do Doc-2-vec: where we add a vector for each paragraph / document, also randomly initialized. (another layer of complexity).
+
+To infer for new paragraph: keep weights fixed, do stochastic gradient descent on the representation D, sampling context examples from this paragraph.
+
+```python
+model = gensim.models.doc2vec.Doc2Vec(size=50, min_count=2, iter=55)
+model.build_vocab(train_corpus)
+model.train(train_corpus, total_examples=model.corpus_count)
+
+# To do encoding using doc2vec:
+vectors = [model.infer_vector(train_corpus[doc_id].words) for doc_id in range(len(train_corpus))]
+```
+
+Other things:
+
+[GloVe: Global Vectors for Word Representation](https://nlp.stanford.edu/projects/glove/)
+
+
+
+
