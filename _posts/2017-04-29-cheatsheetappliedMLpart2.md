@@ -137,3 +137,109 @@ LDA can be used both as a classifier and a dimensionality reduction techinique. 
 
 A variation is Quadratic Discriminant Analaysis, where basically each class will have separate covariance matrices.
 
+# Working with imbalanced data
+
+## Change threshold
+
+```python
+y_pred = lr.predict_proba(X_test)[:, 1] > .85 # change threshold to 0.85
+```
+
+**Sanity check question: for the above code, would you expect the precision of predicting positive (class 1) to increase or decrease? How about recall? How about support?**
+
+## Sampling approaches
+
+### Random undersampling
+
+Drop data from the majority class randomly, until balanced.
+
+Pros: very fast training, really good for large datasets
+Cons: Loses data
+
+```python
+from imblearn.under_sampling import RandomUnderSampler
+
+rus = RandomUnderSampler(replacement = False)
+X_train_subsample, y_train_subsample = rus.fit_sample(X_train, y_train)
+```
+
+Use make_pipeline in imblearn:
+
+```python
+from imblearn.pipeline import make_pipeline as make_imb_pipeline
+undersample_pipe = make_imb_pipeline(RandomUnderSampler(), LogisticRegressionCV())
+scores = cross_val_score(undersample_pipe, X_train, y_train, cv=10)
+```
+
+### Random oversampling
+
+Repeat data from the minority class randomly, until balanced.
+
+Pros: more data (although many duplication)
+Cons: MUCH SLOWER (and sometimes, the accuracy will get lower)
+
+```python
+from imblearn.pipeline import make_pipeline as make_imb_pipeline
+oversample_pipe = make_imb_pipeline(RandomOverSampler(), LogisticRegressionCV())
+scores = cross_val_score(oversample_pipe, X_train, y_train, cv=10)
+```
+
+### Class-weights
+
+Instead of repeating samples, we can just re-weight the loss function. It has the same effect as over-sampling (though not random), but not as expensive and time consuming.
+
+```python
+from sklearn.linear_model import LogisticRegression
+scores = cross_val_score(LogisticRegression(class_weight="balanced"), X_train, y_train, cv=5)
+```
+
+### Ensemble resampling
+
+Random resampling for each model, and then ensemble them.
+
+Pros: As cheap as undersampling, but much better results
+Cons: Not easy to do right now with sklearn and imblearn
+
+### Edited Nearest Neighbors
+
+Remove all samples that are misclassified by KNN from training data (mode) or that have any point from other class as neighbor (all). Can be used to clean up outliers or boundary cases.
+
+```python
+from imblearn.under_sampling import EditedNearestNeighbours
+
+# what? it's NearestNeighbours with u and n_neighbors without u @.@ Great API design...
+enn = EditedNearestNeighbours(n_neighbor=5) 
+X_train_enn, y_train_enn = enn.fit_sample(X_train, y_train)
+
+enn_mode = EditedNearestNeighbours(kind_sel = "mode", n_neighbor=3)
+X_train_enn_mode, y_train = enn_mode.fit_sample(X_train, y_train)
+```
+
+### Condensed Nearest Neighbors
+
+Iteratively adds points to the data that are misclassified by KNN. Contrast to Edited Nearest Neighbors,this resampling method focuses on the boundaries.
+
+```python
+from imblearn.under_sampling import CondensedNearestNeighbour
+# CNN is not convolutional neural net XD
+cnn_pipe = make_imb_pipeline(CondensedNearestNeighbour(), LogisticRegressionCV())
+scores = cross_val_score(cnn_pipe, X_train, y_train, cv=10)
+```
+
+### Synthetic Minority Oversampling Technique (SMOTE)
+
+Add synthetic (artificial) interpolated data to minority class.
+
+Algorithm:
+- picking random neighbors from k neighbors
+- pick a point on the line between those two uniformly
+- repeat
+
+Pros: allows adding new interpolated samples, which works well in practice; There are many more advanced variants based on SMOTE
+Cons: leads to very large datasets (as it is doing oversampling), but can be mitigated by combining with undersampled data
+
+```python
+from imblearn.over_sampling import SMOTE
+smote_pipe = make_imb_pipeline(SMOTE(), LogisticRegressionCV())
+scores = cross_val_score(smote_pipe, X_train, y_train, cv=10)
+```
