@@ -233,7 +233,7 @@ Note:
 
 ## Kernel Density[^4]
 
-![Kernel density vs Histogram](http://www.dataivy.cn/wp-content/uploads/2015/04/Kernel-Density-EstimationKDE.png)
+![Kernel density vs Histogram](({{ site.url }}/assets/pics/Kernel-Density-EstimationKDE.png))
 
 [^4]: Source: http://www.dataivy.cn/blog/%E6%A0%B8%E5%AF%86%E5%BA%A6%E4%BC%B0%E8%AE%A1kernel-density-estimation_kde/
 
