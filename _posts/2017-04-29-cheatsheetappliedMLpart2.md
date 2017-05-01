@@ -39,9 +39,9 @@ Care has been taken to avoid copyrighted contents as much as possible, and give 
 
 It is very natural to evaluate the performance of a model by looking at its **accuracy** -- meaning out of all testing data, how many we get *correct* (predict true when it should be true, and predict false when it should be false).
 
-However, this measurement becomes less effective if the data is imbalanced -- meaning we have way more data in one class compared to others. For example -- if 99% of the data are labeled as 1, a model can simply `cheat` by always predicting 1 -- a naive, trivial but high accuracy model. In those cases, we need better measurements, and that's why we introduce precision and recall.
+However, this measurement becomes less effective if the data is imbalanced -- meaning we have way more data in one class compared to others. For example -- if 99% of the data are labeled as 1, a model can simply "cheat" by always predicting 1 -- a naive, trivial but high accuracy model. In those cases, we need better measurements, and that's why we introduce precision and recall.
 
-I have had a long time memorizing which one is which, and there are so many combinations between True Positive, False Positive, True Negative and False Negative so I almost always get confused. I found it's actually easier if we take a step back and first intuitively understand the word `precision` and `recall` (yes, the name is not a random one!)
+I have had a long time memorizing which one is which, and there are so many combinations between True Positive, False Positive, True Negative and False Negative so I almost always get confused. I found it's actually easier if we take a step back and first intuitively understand the word "precision" and "recall" (yes, the name is not a random one!)
 
 When we say precision, we are talking about how precise you are. For example, if I am searching something on Google, I will say the precision is high when *out of everything Google returns to me*, I found most of them relevant to what I want to search for.
 
@@ -850,9 +850,301 @@ Rule of thumbs for picking solvers:
 - Early stopping 
 - Drop-out
 
+## Autodiff
+
+Autodiff is the process to automatically calculate differentiation (usually when you are doing back propagation). 
+
+Below is an example: [^6]
+
+```python
+class array(object) :
+        """Simple Array object that support autodiff."""
+        def __init__(self, value, name=None):
+            self.value = value
+            if name:
+                self.grad = lambda g : {name : g}
+
+        def __add__(self, other):
+            assert isinstance(other, int)
+            ret = array(self.value + other)
+            ret.grad = lambda g : self.grad(g)
+            return ret
+
+        def __mul__(self, other):
+            assert isinstance(other, array)
+            ret = array(self.value * other.value)
+            def grad(g):
+                x = self.grad(g * other.value)
+                x.update(other.grad(g * self.value))
+                return x
+            ret.grad = grad
+            return ret
+
+    # some examples
+    a = array(1, 'a')
+    b = array(2, 'b')
+    c = b * a
+    d = c + 1
+    print d.value
+    print d.grad(1)
+    # Results
+    # 3
+    # {'a': 2, 'b': 1}
+```
+
+[^6]: Source: http://mxnet.io/architecture/program_model.html
+
+When you run d.grad(1), it recursively invokes the grad function of its inputs, backprops the gradient value back, and returns the gradient value of each input. It can be done because gradient calculation is sort of automatically 'done' while you perform addition and multiplication: we are keeping track of that computation and building up a graph of how to compute the gradient of it.
+
+## Calculate number of parameters in neural network
+
+It's really nothing fancy. For vanilla neural network, to calculate number of parameters in one layer, it is *# of input* $$\times$$ *# of output* + *# of output* (for bias). It will be a bit trickier for convolutional neural network, where you need to take the kernel size into account: *width* $$\times$$ *height* $$\times$$ *depth* (number of filters we would like to use) $$\times$$ (*kernel size* (including channel!) + 1 (for bias)) (Without parameter sharing).
+
+## Keras
+
+Keras is an open source neural network library written in Python. It is capable of running on top of Tensorflow or Theano. The API is pretty straightforward (at least the sequencial one). Sequential provides a way to specify feed-forward neural network, one layer after another.
+
+### Note
+
+- For the first layer we need to specify the input shape so the model knows the sizes of all the matrices. The following layers can infer the sizes from the previous layers.
+
+- The process is:
+	- Specifying the model (using a list or `.add`)
+	- `model.compile`, with optimizer, loss, metrics, validation_split etc. specified.
+	- Do `model.fit`, where the training starts
+	- Evaluate on test set by `model.evaluate(X,y,verbose=0)`, returns loss and accuracy as a tuple.
+
+	
+### Necessary preparation
+
+- Flatten the data to (num_sample, num_params) (or reshape the data to either (num_samples, width, height, channel) or (num_samples, channel, width, height)), but don't mess up with the dimension when doing convolutional neural net with images! (meaning when you reshape, you cannot brute force -- you should roll/swap the axes and make sure after the reshaping, the image preserves.
+
+- Standardize so the model will become more stable and is much easier to train when the input is small numbers. **Make sure you change to float before the standarization!!! Otherwise you will get all zeros because of the integer division in Python 2...** (say this with tears)
+
+- Do `keras.utils.to_categorical(y_train, num_classes)` to do "one-hot" encoding for y. 
+
+- Batch size is not a hyperparameters. Instead of gridsearching over it, keep increasing the batch size until you see above 90% GPU utilization.
+
+- Number of epochs can be tuned by manual tuning, early stopping, or callback.
+
+- Epochs is fit parameter, not in make_model.
 
 
+### Code
+
+Use callable to wrap the keras and send it to keras classifier:
+```python
+from keras.wrappers.scikit_learn import KerasClassifier
+from sklearn.model_selection import GridSearchCV
+
+def make_model(optimizer="adam", hidden_size=32):
+    model = Sequential([
+        Dense(hidden_size, input_shape=(784,)),
+        Activation('relu'),
+        Dense(10),
+        Activation('softmax'),
+    ])
+    model.compile(optimizer=optimizer, loss="categorical_crossentropy", metrics=['accuracy'])
+    return model
+
+clf = KerasClassifier(make_model)
+
+param_grid = {'epochs': [1, 5, 10],  # epochs is fit parameter, not in make_model!
+              'hidden_size': [32, 64, 256]}
+
+grid = GridSearchCV(clf, param_grid=param_grid, cv=5)
+```
 
 
+## Drop-out regularization
+
+We set some nodes to 0. And not only on the input layer, also the intermediate layer. For each sample, and each iteration we pick different nodes. Randomization avoids overfitting to particular examples.
+
+Rate is often as high as 50%. When predicting, use all weights and down-weight by rate.
+
+When to use drop-out:
+
+- Avoids overfitting 
+- Allows using much deeper and larger models 
+- Slows down training somewhat 
+- Wasn’t able to produce better results on MNIST (I don’t have a GPU) but should be possible
+
+### Code
+
+```python
+from keras.layers import Dropout
+
+model_dropout = Sequential([
+    Dense(1024, input_shape=(784,), activation='relu'),
+    Dropout(.5),
+    Dense(1024, activation='relu'),
+    Dropout(.5),
+    Dense(10, activation='softmax'),
+])
+model_dropout.compile("adam", "categorical_crossentropy", metrics=['accuracy'])
+history_dropout = model_dropout.fit(X_train, y_train, batch_size=128,
+                            epochs=20, verbose=1, validation_split=.1)
+```
+
+## Convolutional Neural Network
+
+High level idea: Convolutional Neural Network extends from vanilla neural net by exploiting the fact that input like images has archiecture: an image can be represented as a 3D volume (width, height, depth/channels) and therefore, instead of flattening them and losing this information, **each layer of Convolutional Neural Net transforms an input 3D volume to an output 3D volume with some differentiable function that may or may not have parameters.** That's why it can do really powerful thing with much less parameters.
 
 
+### How many neurons fit in each layer [^7]
+
+> We can compute the spatial size of the output volume as a function of the input volume size (W), the receptive field size of the Conv Layer neurons (F), the stride with which they are applied (S), and the amount of zero padding used (P) on the border. You can convince yourself that the correct formula for calculating how many neurons “fit” is given by (W−F+2P)/S+1(W−F+2P)/S+1.
+
+
+[^7]: Source: http://cs231n.github.io/neural-networks-1/
+
+### Parameter Sharing
+
+Parameter sharing constrains the neurons in each depth slice (each filter) to use the same weights and bias. Now we only have *num of filters* $$\times$$ (*kernel_size* (including channel) + 1 (for bias)). Note that the kernel size in the intermediate layer has a depth dimension as # of neurons in the previous layer.
+
+**Sanity Check Time: Why the second conv layer has 9248 parameters?**
+
+![MNIST Code in Keras]({{ site.url }}/assets/pics/mnist_code.png)
+
+![mNIST Summary]({{ site.url }}/assets/pics/mnist_summary.png)
+
+
+### Max pooling
+
+Max pooling is added to progressively reduce the size of the representation to reduce the amount of parameters and computation time. It can also control overfitting.
+
+**Sanity check time: A 2x2 max pooling layer gets rid of how many neurons?**
+
+Note: Need to remember position of maximum for back-propagation. Again not differentiable so needs to use subgradient descent.
+
+### Batch Normalization
+
+Idea: neural networks learn best when the input is zero mean and unit variance. So let's scale our data -- even in the middle
+
+Batch normalization re-normalizes the activations for a layer for each batch during training (as the distribution over activation changes). **This happens before applying to activation function (so use BN between the linear and non-linear layers in your network).**
+
+Additional scale and shift parameters are learned that are applied after the per-batch normalization.
+
+### Use pre-trained networks
+
+Idea: Utilize what people have done with a lot of datasets ("stood on the shoulders of giants") as feature extraction / as initialization for fine tuning. Usually we will train a last "layer" on top of that, either being logistic regression or a MLP. Also called transfer learning.
+
+Fine tuning: starting with pre-trained net, we back-propagate error through all layers “tune” filters to new data.
+
+Note: This potentially doesn’t work with images from a very different domain, like medical images.
+
+Code:
+
+```python
+from keras.applications.vgg16 import preprocess_input
+X_pre = preprocess_input(X)
+features = model.predict(X_pre)
+features_ = features.reshape(200, -1)
+```
+
+### Adverserial Samples
+
+Definition: Adverserial samples are samples that were created by an adversary or attacker to fool your model. Usually they learnt the weights in their neural net and cheat by changing the picture slightly. It looks all the same to us, but the neural net will have totally different output. 
+
+Given how high-dimensional the input space is, this is not very surprising from a mathematical perspective, but it might be somewhat unexpected.
+
+
+# Time Series
+
+Time Series differs from other data in the sense that it is not iid. (identically and independently distributed). There are equally spaced (like stocks) and non equally spaced (like earthquake data) time series.
+
+**Key point: the train/test split and validation set split is different as usual. We must make sure the training data set is in the past and we use those to predict future!**
+
+## Tasks
+
+- 1D forecasting: one thing, use past predict future
+- ND forecasting: multiple things, use past predict future (predict one or more)
+- Feature-based forecasting
+- Time series classification
+
+
+## Parse date & Time Series Index
+
+The code will combine multiple columns into a single date (so concatenate years, months and days to a date. Furthermore, it treats the newly created column as the index -- now pandas will be able to do stuff because this data frame is a time series data frame!
+
+```python
+data = pd.read_csv(url, parse_dates=[[0,1,2]], index_col="year_month_day")
+```
+
+## Backfil and forward fill
+
+Imputation by looking back or forward
+
+```python
+maunaloa.fillna(method="ffill", inplace=True)
+```
+
+
+## Resampling
+```python
+resampled_co2 = manualoa.co2.resample("MS") # MS is month start frequency
+resampled_co2.mean().head() # resampling is lazy -- only until when you use it, it will actually extract out the data
+```
+
+## Detrending (look at differencing)
+
+```python
+data.diff().plot()
+```
+
+
+## Autocorrelation (correlation between two data point)
+
+```python
+data.autocorr(lag=12)
+```
+
+## Autoregressive linear model
+
+Model: $$x_{t+k} = c_0x_t + c_1x_{t+1} + \cdots + c_{k-1}x_t$$
+
+```python
+from statsmodels.tsa import ar_model
+ar = ar_model.AR(ppm[:500])
+res = ar.fit(maxlag=12)
+res.params
+res.predict(ppm.index[500], ppm.index[-1])
+```
+
+Note:
+- Change max lag will change the fitting a lot!
+
+## ARIMA
+
+```python
+from statsmodels import tsa
+
+arima_model = tsa.arima_model.ARIMA(ppm[:500], order=(12, 1, 0))
+res = arima_model.fit()
+arima_pred = res.predict(ppm.index[500], ppm.index[-1], typ="levels")
+```
+
+## With scikit-learn: fit linear/quadratic linear regression
+
+```python
+X_train, X_test = X.iloc[:500, :], X.iloc[500:, :]
+from sklearn.linear_model import LinearRegression
+lr = LinearRegression().fit(X_train, train)
+lr_pred = lr.predict(X_test)
+
+from sklearn.preprocessing import PolynomialFeatures
+lr_poly = make_pipeline(PolynomialFeatures(include_bias=False), LinearRegression())
+lr_poly.fit(X_train, train)
+```
+
+One way to do things is to use a linear model with poly-2 features to learn the trend, and then detrend, and do AR model on residuals.
+
+## Side note: pandas group-by function
+
+Can be pretty handy!
+
+```python
+week = energy.Appliances.groupby([energy.index.hour, energy.index.dayofweek]).mean()
+```
+
+ 
