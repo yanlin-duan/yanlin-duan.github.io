@@ -582,3 +582,122 @@ grid.fit(X,y)
 ``` 
 
 n_clusters: For preprocessing, larger is often better; for exploratory analysis: the one that tells you the most about the data is the best.
+
+
+# Natural Language Processing
+
+## Generating features from text
+
+
+The idea of bag of words is to tokenize the text, and then build a vocabulary over all documents, and finally do sparse matrix encoding on each token.
+
+Code:
+
+```python
+from sklearn.feature_extraction.text import CountVectorizer
+vect = CountVectorizer()
+vect.fit(word)
+print(vect.get_feature_names())
+X = vect.transform(word)
+print(vect.inverse_transform(X)[0]) # to see the bag
+```
+
+### Tokenization
+
+There are many options:
+
+- Specify token pattern: do you want numbers? single-letter words? punctuations? Specify by regex in CountVectorizer's token_pattern.
+
+### Normalization (preprocessing)
+
+- Correct the spelling
+- Stemming: reduce to word stem (by a crude heuristic process that chops off the ends of words in the hope of achieving this goal correctly most of the time, and often includes the removal of derivational affixes)
+- Lemmatization: reduce words to stem using curated dictionary and context (properly with the use of a vocabulary and morphological analysis of words, normally aiming to remove inflectional endings only and to return the base or dictionary form of a word, which is known as the lemma)
+- Lowercase the words
+
+### Restricting the vocabulary (feature selection)
+
+Stop words: exclude some common words using some built-in language-specific / context-specific dictionarys:
+
+```python
+vect = CountVectorizer(stop_words='english')
+vect.fit(word)
+```
+
+```python
+# Use your own stop words
+my_stopwords = set(ENGLISH_STOP_WORDS)
+my_stopwords.remove("not")
+vect3msw = CountVectorizer(stop_words=my_stopwords)
+```
+Note: For supervised learning often little effect on large corpuses (on small corpuses and for unsupervised learning it can help)
+
+Max_df: exclude too common word by either setting a percentage or the specific number of occurance threshold
+
+Infrequent words: set min_df with the rationale that words only appear once or twice may not be helpful.
+
+### Beyond unigram (Feature engineering)
+
+*We can do N-grams: tuples of consecutive words.*
+
+```python
+cv = CountVectorizer(ngram_range=(1,2)).fit(word)
+```
+
+Note: if you choose really high n-grams, the feature space dimension can **explode**!
+
+Stop words on bi-gram or 4-gram drastically reduces number of features.
+
+*We can do Tf-idf rescaling.*
+
+$$tf-idf(t,d) = tf(t,d) \cdot (\log{\frac{1+n_d}{1+df(d,t}} + 1)
+
+Tf-idf emphasizes rare words, so acting like a soft stop word removal.
+
+It has slightly non-standard smoothings. By default also L2 normalization.
+
+```python
+from sklearn.feature_extraction.text import Tfidftransformer
+malory_tfidf = make_pipeline(CountVectorizer(), TfidfTransformer()).fit_transform(malory)
+```
+
+*We can do character n-grams.*
+
+Why?
+
+- Be robust to misspelling
+- Language detection
+- Learn from names/made-up words
+- We think a certain character combination may be a good feature
+
+Analyzer 'char_wb' creates character n-grams only from text inside word boundaries. It adds a space before and after each document and can generate larger vocabularies than 'char' sometimes. (See [here](https://github.com/scikit-learn/scikit-learn/issues/8694))
+
+```python
+cv = CounterVectorizer(analyzer='char_wb').fit(word)
+```
+
+*We can include other features.*
+
+- Length of text
+- Number of out-of-vocabularly words 
+- Presence / frequency of ALL CAPS
+- Punctuation….!? (somewhat captured by char ngrams)
+- Sentiment words (good vs bad) 
+- Domain specific features
+
+
+### Large scale text vectorization -- hashing
+
+When doing large scale text vectorization, instead of encoding each token in the vocabulary, we encode the **hash value** of each token in the vocabulary.
+
+
+Pro:
+
+- Fast 
+- Works for streaming data (can do one by one)
+- Low memory footprint
+- Collisions are not a problem for performance
+
+Con:
+- Can’t interpret results 
+- Hard to debug
