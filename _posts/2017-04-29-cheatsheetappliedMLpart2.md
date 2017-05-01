@@ -754,7 +754,7 @@ As an illustration, see the picture below[^5]:
 
 [^5]: Source: https://www.zhihu.com/question/32275069
 
-![Word embedding](https://pic2.zhimg.com/1cd37c9bac3b7503801d5a812d1a1b01_b.png)
+![Word embedding]({{ site.url }}/assets/pics/word_embedding.png)
 
 *CBOW*
 
@@ -825,13 +825,30 @@ The general architecture of (vanilla) neural networks looks like this:
 
 Input -> Hidden Layer 1 -> Non-linearity -> Hidden Layer 2 -> Non-linearity -> ... -> Hidden Layer n -> (Different) Non-linearity -> Output
 
-Where each layer contains many unit of neuron. For non-linearity, some common selections include: sigmoid, tanh, relu (rectifying linear function). For the last non-linearity though, we usually use a different function: identity for regression, and soft-max for classification.
+Where each layer contains many unit of neuron. For non-linearity, some common selections include: sigmoid, tanh (may get smoother boundaries in small datasets), relu (rectifying linear function, preferred for large network). For the last non-linearity though, we usually use a different function: identity for regression, and soft-max for classification.
 
 ## Back-propagation
 
 Back-propagation provides a way to compute the update of the weights easily. It combines chain rule and dynamic programming to systematically calculate partial derivatives layer by layer, starting from the last layer, without doing duplicate works. 
 
 **Note that back-propagation itself does not optmize the weights of a neural network** -- It is gradient descent or other optimizer that optimizes the weight.
+
+## Solvers
+
+The standard solvers include l-bfgs, newton and cg, but if computing gradients over whole dataset is expensive, it is better to use stochastic gradient descent, or minibatch update.
+
+Similarly, constant step size $$\eta$$ is not good. A better way is to adaptively learn $$\eta$$ for each entry. There's also adam, which uses a magic number for $$\eta$$.
+
+Rule of thumbs for picking solvers:
+- Small dataset: off the shelf like l-bfgs 
+- Big dataset: adam 
+- Have time & nerve: tune the schedule
+
+## Complexity control
+- Number of parameters 
+- Regularization 
+- Early stopping 
+- Drop-out
 
 
 
