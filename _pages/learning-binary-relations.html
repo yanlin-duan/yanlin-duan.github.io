@@ -150,7 +150,7 @@ Note :
 
 ### A few more terms
 
-Let `\(X\)` be a finite learning domain. Let `\(C\)` be a concept class over `\(X\)`.
+Let `\(\mathcal{X}\)` be a finite learning domain. Let `\(C\)` be a concept class over `\(\mathcal{X}\)`.
 
 A learner is *consistent* if, on every trial, there exists some concept `\(c \in C \)` such that:
 
@@ -163,7 +163,7 @@ A learner is *consistent* if, on every trial, there exists some concept `\(c \in
 \)`
 
 
-A *query sequence* `\(\pi = \langle x_1, x_2, \dots, x_{|X|} \rangle\)` is a permutation of `\(X\)`, where `\(x_t \in X\)` is the instance presented to the learner at the `\(t^{\text{th}}\)` trial.
+A *query sequence* `\(\pi = \langle x_1, x_2, \dots, x_{|\mathcal{X}|} \rangle\)` is a permutation of `\(\mathcal{X}\)`, where `\(x_t \in \mathcal{X}\)` is the instance presented to the learner at the `\(t^{\text{th}}\)` trial.
 
 ---
 # Learning Binary Relations
@@ -179,8 +179,18 @@ Who determines the query sequence?
 In this presentation, we will consider the following settings:
 
 - Director Agnostic: we want some mistake bounds regardless of the director.
+
+--
+
 - Self-directed: the learner itself chooses `\(\pi\)`.
+
+--
+
 - Teacher-directed: A teacher who knows the target relation and wants to minimize the learner's mistakes by choosing `\(\pi\)`; Teacher can choose `\(x_t\)` with the knowledge of 1) target relation, 2) `\(x_1, \dots, x_{t-1}\)`, 3) `\(\hat y_1,\dots,\hat y_{t-1}\)`.
+
+--
+
+- Adversary-directed: An adversary who tries to maximize the learner's mistakes, knows the learner's algorithm and has unlimited computing power, chooses `\(\pi\)`.
 
 --
 
@@ -262,9 +272,9 @@ We prove the bound by showing that for any algorithm, there exists a matrix (fil
 
 --
 
-For entries in the first `\(x\)` columns, the adversary replies that the learner's prediction is incorrect.
+For entries in the first `\(p\)` columns, the adversary replies that the learner's prediction is incorrect.
 
-For entries in the first `\(y\)` rows, the adversary also replies that the learner's prediction is incorrect.
+For entries in the first `\(q\)` rows, the adversary also replies that the learner's prediction is incorrect.
 
 --
 
@@ -272,20 +282,28 @@ Constraint for adversary: it cannot create too many row types.
 
 --
 
-By forcing mistakes in the first `\(x\)` columns, at most `\(2^x\)` row types can be created.
+By forcing mistakes in the first `\(p\)` columns, at most `\(2^p\)` row types can be created.
 
-By forcing mistakes in the first `\(y\)` rows, at most `\(y\)` row types can be created.
+By forcing mistakes in the first `\(q\)` rows, at most `\(q\)` row types can be created.
 
-$$2^x + y = k$$
+$$2^p + q = k$$
 
 ---
 
-Set `\(2^x = \beta k\)`, `\(y = (1-\beta) k\)`, we can get `\(x = \lfloor \log(\beta k) \rfloor\)`, `\(y = (1-\beta k)\)`.
+**Proof** (cont'd):
+
+By forcing mistakes in the first `\(p\)` columns, at most `\(2^p\)` row types can be created.
+
+By forcing mistakes in the first `\(q\)` rows, at most `\(q\)` row types can be created.
+
+$$2^p + q = k$$
+
+Set `\(2^p = \beta k\)`, `\(q = (1-\beta) k\)`, we can get `\(p = \lfloor \log(\beta k) \rfloor\)`, `\(q = (1-\beta k)\)`.
 
 The mistake bound: `\((1-\beta)k \cdot m + \lfloor \log(\beta k) \rfloor \cdot n - (1-\beta)k\lfloor \log(\beta k) \rfloor\)`.
 
 
-.center[![:scale 80%]({{ site.url }}/assets/pics/learning-binary-relations1.png)]
+.center[![:scale 60%]({{ site.url }}/assets/pics/learning-binary-relations1.png)]
 
 ---
 # General bounds applied to all directors
@@ -418,7 +436,7 @@ Adding up, the mistake bound is `\(\min \{km + (n-k)m, km + (n-k)(k-1)\}\)`.
 ---
 # Teacher-directed
 
-**Question: Recall that the mistake bound for learner director is `\(km + (n-k)\lfloor \log k \rfloor\)`, while teacher-directed bound is `\((km + (n-k)(k-1)\)`. Why is it even worse?**
+**Question: Recall that the mistake bound for learner director is `\(km + (n-k)\lfloor \log k \rfloor\)`, while teacher-directed bound is `\(km + (n-k)(k-1)\)`. Why is it even worse?**
 
 --
 
@@ -429,9 +447,76 @@ Teacher-directed case apply to all consistent learners!
 A consistent learner may do *minority-vote* instead of *majority-vote*.
 
 ---
+# Adversary-directed
+**Theorem 6 (Lower Bound)** Any prediction algorithm makes at least `\(\min\{nm, km+(n-k)\lfloor \log k \rfloor\}\)` mistakes against an adversary-selected query sequence.
+
+--
+
+**Proof**:
+
+The high level idea is to do the reverse of what the helpful teacher does -- try to !
+
+--
+
+First, the adversary presents entries in the first `\(\min\{m,\lfloor \log k \rfloor\}\)` columns for all `\(n\)` rows, and replies with each prediction is incorrect.
+
+--
+
+Second, if `\(m > \lfloor \log k \rfloor\)`, the adversary presents remaining `\(m - \lfloor \log k \rfloor\)` columns for each of the `\(k\)` row type, and forces mistakes on all of them.
+
+--
+
+Adding up the number of mistakes, we get the desired bound.
+
+---
+# Adversary-directed
+
+How about upper bound?
+
+--
+
+Recall that if efficiency is not a concern, we can always run halving algorithm to get an upper bound of `\(km+(n-k)\lfloor \log k \rfloor\}\)`.
+
+--
+
+If efficiency *is* a concern...let's start by considering smaller `\(k\)`
+
+--
+
+For `\(k = 1\)`, we are fine. Can achieve at most `\(m\)` mistakes.
+
+--
+
+How about `\(k = 2\)`?
+
+---
+# Adversary-directed
+
+**Theorem 7 (Upper Bound when `\(k\)`=2)** There exists a polynomial prediction algorithm that makes at most 2m+n-2 mistakes against adversary-selected query sequence when k=2.
+
+--
+
+**Proof**: Let's do it on board!
+
+---
+# Adversary-directed
+
+How about `\(k \ge 3\)`?
+
+--
+
+**We don't know!**
+
+--
+
+To find if there's a matrix with at most `\(k\)` row types that is consistent with a partially known matrix `\(M\)`, is *NP-hard*.
+
+
+
+---
 # Conclusion and Takeaways
 
-1. In previous discussions, we usually focus on learner's algorithm, and assume the environment (director) as the worst case (adversary). It turns out to be not true in many real life cases. Maybe the director is trying to help learner to learn. And in those cases, we can indeed improve learner's performance.
+1. In previous lectures, we usually focus on learner's algorithm, and assume the environment (director) as the worst case (adversary). It turns out to be not true in many real life cases. Maybe the director is trying to help learner to learn. And in those cases, we can indeed improve learner's performance.
 
 --
 
