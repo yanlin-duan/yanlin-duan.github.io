@@ -13,7 +13,7 @@ class: center, middle
 ---
  
 # Motivation of Binary Relations
- 
+
 Let's start by considering the set of all students (let's call it `\(S\)`), and the set of all topics in this course (`\(T\)`).
 
 --
@@ -298,7 +298,7 @@ By forcing mistakes in the first `\(q\)` rows, at most `\(q\)` row types can be 
 
 $$2^p + q = k$$
 
-Set `\(2^p = \beta k\)`, `\(q = (1-\beta) k\)`, we can get `\(p = \lfloor \log(\beta k) \rfloor\)`, `\(q = (1-\beta k)\)`.
+Set `\(2^p = \beta k\)`, `\(q = (1-\beta) k\)`, we can get `\(p = \lfloor \log(\beta k) \rfloor\)`, `\(q = (1-\beta)k\)`.
 
 The mistake bound: `\((1-\beta)k \cdot m + \lfloor \log(\beta k) \rfloor \cdot n - (1-\beta)k\lfloor \log(\beta k) \rfloor\)`.
 
@@ -448,7 +448,7 @@ A consistent learner may do *minority-vote* instead of *majority-vote*.
 
 ---
 # Adversary-directed
-**Theorem 6 (Lower Bound)** Any prediction algorithm makes at least `\(\min\{nm, km+(n-k)\lfloor \log k \rfloor\}\)` mistakes against an adversary-selected query sequence.
+**Theorem 6 (Lower Bound)** Any prediction algorithm makes at least `\(\min\{nm, km+(n-k)\lfloor \log k \rfloor\)` mistakes against an adversary-selected query sequence.
 
 --
 
@@ -475,7 +475,7 @@ How about upper bound?
 
 --
 
-Recall that if efficiency is not a concern, we can always run halving algorithm to get an upper bound of `\(km+(n-k)\lfloor \log k \rfloor\}\)`.
+Recall that if efficiency is not a concern, we can always run halving algorithm to get an upper bound of `\(km+(n-k)\lfloor \log k \rfloor\)`.
 
 --
 
