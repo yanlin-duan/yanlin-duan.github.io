@@ -34,7 +34,7 @@ tags:
 
     有一些信用卡的offer和perk是只有美国能用的（比如Amex Plat的Uber credit），如果没有好的用法或者美国的消费可以取消。
 
-    服务订阅的话，YouTube, Netflix，Apple Music，Spotify，Disney Plus这些英国都可以正常用，Hulu, YouTube TV, Peacock, ESPN，HBO Max都是英国用不了的（有些用VPN也没有办法）。Amazon Prime和Audible英美也是不通的，建议取消美国的，看情况定英国的。（但Audible有一个办法继续使用美国的credit在英国买书，简单来说就是用VPN/想办法到美国的Audible网站上选择gift this book，然后再用自己的任何账号redeem就可以了）
+    服务订阅的话，YouTube, Netflix, Apple Music, Spotify, Disney Plus这些英国都可以正常用，Hulu, YouTube TV, Peacock, ESPN, HBO Max都是英国用不了的（有些用VPN也没有办法）。Amazon Prime和Audible英美也是不通的，建议取消美国的，看情况定英国的。（但Audible有一个办法继续使用美国的credit在英国买书，简单来说就是用VPN/想办法到美国的Audible网站上选择gift this book，然后再用自己的任何账号redeem就可以了）
 
     Lyft英国是没有的，一般都用Uber和Bolt。但伦敦公共交通足够发达很少需要打车。
 
@@ -43,10 +43,15 @@ tags:
 3. 更改自己的地址
 
     最重要的地址应该是银行和公司内部系统吧。如果有英国的地址且可以改成英国地址的话，可以改。否则的话可以改到朋友家，然后写care of:
+
     _你的名字_
+    
     _c/o 朋友的名字_
+    
     _朋友家的地址_
+    
     _XY, 12345_
+    
     _United States_
 
 4. 驾照续命
