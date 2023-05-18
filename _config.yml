@@ -11,9 +11,9 @@ title                    : "Alan Duan"
 title_separator          : "-"
 name                     : "Alan Duan"
 description              : "Thoughts, knowledge and experiences"
-url                      : "https://alan97.github.io"
+url                      : "https://yanlin-duan.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
-repository               : "alan97"
+repository               : "yanlin-duan"
 teaser                   : # path of fallback teaser image, e.g. "/assets/images/500x300.png"
 # breadcrumbs            : false # true, false (default)
 words_per_minute         : 200
