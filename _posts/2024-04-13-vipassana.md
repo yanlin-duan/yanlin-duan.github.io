@@ -36,8 +36,9 @@ Vipassana 冥想营首先把它最骇人的一面毫无遮掩地展现在每一�
 
 今年十月，我来到位于英国威尔士的 [Dhamma Dipa](https://www.dhamma.org/en/schedules/schdipa) 中心，开始了我的十天“精神囚徒健身”。
 
-![作息时间表。来自：https://jooiworld.com/posts/malaysia-vipassana.php]({{ site.url }}/assets/pics/vipassana/schedule.jpeg)
-\作息时间表。来自：https://jooiworld.com/posts/malaysia-vipassana.php
+| ![作息时间表。来自：https://jooiworld.com/posts/malaysia-vipassana.php]({{ site.url }}/assets/pics/vipassana/schedule.jpeg) |
+| :-------------------------------------------------------------------------------------------------------------------------: |
+|                           _作息时间表。来自：https://jooiworld.com/posts/malaysia-vipassana.php_                            |
 
 # 初探中心
 
