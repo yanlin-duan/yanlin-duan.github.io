@@ -361,5 +361,5 @@ Carl 噗嗤一声笑了，说我听到你打呼噜了，那天都把我逗乐了
 
 No craving. No aversion. No ignorance. Maintain perfect equanimity.
 
-![走之前拍摄的内观楼]({{ site.url }}/assets/pics/vipassana/dhamma_hall_2.jpeg)
+![走之前拍摄的内观楼]({{ site.url }}/assets/pics/vipassana/dhamma_hall_2.jpg)
 \走之前拍摄的内观楼
